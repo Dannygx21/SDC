@@ -5,3 +5,4 @@ TEST
 tests
 package-lock.json
 .env
+.vscode
