@@ -1,4 +1,3 @@
-const { exec } = require('child_process');
 const path = require('path')
 const dataPath = path.join(__dirname, '../Data')
 
