@@ -27,10 +27,10 @@ app.get('/', async (req, res) => {
     res.sendStatus(200)
 })
 
-app.get('/products/:page/:count', async (req, res) => {
-    // console.log(req.body, 'this is body')
-    // console.log(req.params, 'this is params')
-    console.log(req)
+app.get('/products', async (req, res) => {
+    console.log(req.query.page)
+    console.log(req.query.count)
+    //Todo: route to mongoose schema to find count by page
     res.sendStatus(200)
 })
 
