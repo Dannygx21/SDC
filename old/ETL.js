@@ -38,7 +38,7 @@ async function importCsvProgrammatically(dbName, collectionName, csvFilePath, mo
                 // console.log('No records found in CSV to import.');
                 // }
                 console.log('Operation ended')
-                count = 0
+                count = null
                 await client.close();
             });
     } catch (error) {
