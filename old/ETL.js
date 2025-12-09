@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Product = require('../Schemas/Models/Products.js')
+const Related = require('../Schemas/Models/Related.js')
 
 require('dotenv').config({ path: '../.env' });
 const { DB_URL2, DB_USER, DB_PASS, DB_URL } = process.env
@@ -45,10 +46,16 @@ const ETL = {
                         });
                         count++
                     }
+                    // if (count <= 30) {
+                    //     console.log('Data row: ', data)
+                    //     console.log('Transformed Data row: ', action(data))
+                    //     count++
+                    // }
                 })
                 .on('end', async () => {
                     console.log('Operation ended with: ', count)
                     count = null
+                    mongoose.connection.close()
                 });
         } catch (error) {
             console.error(`Error during programmatic import: ${error.message}`);
@@ -66,18 +73,32 @@ const ETL = {
         };
     },
 
+    cleanRelated: function (data) {
+        return {
+            id: Number(data.id),
+            current_product_id: Number(data.current_product_id),
+            related_product_id: Number(data.related_product_id)
+        };
+    },
+
     importProductsToOldDB: function async() {
         this.mainImport('Catwalk-old', 'Product', '../Data/Product/Copy of product.csv', DB_URL, Product, this.cleanProducts);
     },
 
-    importRelated: async () => {
-        await mainImport('Catwalk-old', 'Related', '../Data/Product/Copy of related.csv', DB_URL);
-    }
+    importRelatedToOldDB: function () {
+        this.mainImport('Catwalk-old', 'Related', '../Data/Product/Copy of related.csv', DB_URL, Related, this.cleanRelated);
+    },
+
+    importfeatures: function () {
+        this.mainImport('Catwalk-old', 'Features', '../Data/Product/Copy of features.csv', DB_URL2, Features, this.cleanFeatures);
+    },
+
+
 }
 
 
 
-ETL.importProductsToOldDB();
+ETL.importRelated();
 
 
 // Example usage:

@@ -2,6 +2,7 @@
 require('dotenv').config()
 const mongoose = require('mongoose')
 const { ProductController } = require('../Schemas/Controllers/Products.mjs');
+const { RelatedController } = require('../Schemas/Controllers/Related.mjs');
 const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env
 
 //server
@@ -28,10 +29,21 @@ app.get('/', async (req, res) => {
 })
 
 app.get('/products', async (req, res) => {
+    console.log('Received request for products with page:', req.query.page, 'and count:', req.query.count);
     ProductController.getProductsByPageAndCount(req.query.page, req.query.count)
         .then(products => res.status(200).send(products))
         .catch(err => {
             console.error('Error fetching products by page and count in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
+
+app.get('/products/:product_id/related', async (req, res) => {
+    console.log('Received request for related items of product ID:', req.params.product_id);
+    RelatedController.getRelatedByProductId(Number(req.params.product_id))
+        .then(relatedItems => res.status(200).send(relatedItems))
+        .catch(err => {
+            console.error('Error fetching related items by product ID in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
         })
 })
