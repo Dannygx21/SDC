@@ -28,9 +28,6 @@ app.get('/', async (req, res) => {
 })
 
 app.get('/products', async (req, res) => {
-    console.log(req.query.page)
-    console.log(req.query.count)
-    //Todo: route to mongoose schema to find count by page
     ProductController.getProductsByPageAndCount(req.query.page, req.query.count)
         .then(products => res.status(200).send(products))
         .catch(err => {
