@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Product = require('../Schemas/Models/Products.js')
 const Related = require('../Schemas/Models/Related.js')
+const Features = require('../Schemas/Models/Features.js')
 
 require('dotenv').config({ path: '../.env' });
 const { DB_URL2, DB_USER, DB_PASS, DB_URL } = process.env
@@ -89,8 +90,8 @@ const ETL = {
         this.mainImport('Catwalk-old', 'Related', '../Data/Product/Copy of related.csv', DB_URL, Related, this.cleanRelated);
     },
 
-    importfeatures: function () {
-        this.mainImport('Catwalk-old', 'Features', '../Data/Product/Copy of features.csv', DB_URL2, Features, this.cleanFeatures);
+    importfeaturesToOldDB: function () {
+        this.mainImport('Catwalk-old', 'Features', '../Data/Product/Copy of features.csv', DB_URL, Features, this.cleanFeatures);
     },
 
 
