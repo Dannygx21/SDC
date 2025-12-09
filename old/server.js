@@ -1,8 +1,8 @@
 // Server made to replicate Catwalk project. Catwalk project was given non-ideal API, forcing logic onto front end. This server serves as a replicate of that, to stand up catwalk application.
 require('dotenv').config()
 const mongoose = require('mongoose')
-
-const { DB_URL, DB_NAME, DB_USER, DB_PASS } = process.env
+const { ProductController } = require('../Schemas/Controllers/Products.mjs');
+const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env
 
 //server
 const cors = require('cors')
@@ -15,7 +15,7 @@ app.use(express.json())
 
 //connect to mongodb
 const db = mongoose.connect(DB_URL, {
-    dbName: DB_NAME,
+    dbName: DB_DBNAME,
     user: DB_USER,
     pass: DB_PASS
 })
@@ -31,7 +31,12 @@ app.get('/products', async (req, res) => {
     console.log(req.query.page)
     console.log(req.query.count)
     //Todo: route to mongoose schema to find count by page
-    res.sendStatus(200)
+    ProductController.getProductsByPageAndCount(req.query.page, req.query.count)
+        .then(products => res.status(200).send(products))
+        .catch(err => {
+            console.error('Error fetching products by page and count in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
 })
 
 app.listen(3000, () => {
