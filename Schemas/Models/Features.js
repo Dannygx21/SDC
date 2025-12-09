@@ -16,7 +16,7 @@ const featuresSchema = new mongoose.Schema({
     feature: {
         type: String,
         required: false,
-        default: null
+        default: undefined
     }
 });
 

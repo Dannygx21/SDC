@@ -10,6 +10,7 @@ console.log('DB_URL in ETL:', DB_URL);
 
 const fs = require('fs');
 const csv = require('csv-parser'); // You might need to install 'csv-parser' package: npm install csv-parser
+const { type } = require('os');
 
 
 const ETL = {
@@ -63,6 +64,10 @@ const ETL = {
         }
     },
 
+    noChange: function (data) {
+        return data;
+    },
+
     cleanProducts: function (data) {
         return {
             id: Number(data.id),
@@ -82,6 +87,18 @@ const ETL = {
         };
     },
 
+    cleanFeatures: function (data) {
+        if (data.feature === 'null') {
+            data.feature = undefined;
+        }
+        return {
+            id: Number(data.id),
+            currentproduct_id: Number(data.currentproduct_id),
+            type: data.type,
+            feature: data.feature
+        };
+    },
+
     importProductsToOldDB: function async() {
         this.mainImport('Catwalk-old', 'Product', '../Data/Product/Copy of product.csv', DB_URL, Product, this.cleanProducts);
     },
@@ -90,7 +107,7 @@ const ETL = {
         this.mainImport('Catwalk-old', 'Related', '../Data/Product/Copy of related.csv', DB_URL, Related, this.cleanRelated);
     },
 
-    importfeaturesToOldDB: function () {
+    importFeaturesToOldDB: function () {
         this.mainImport('Catwalk-old', 'Features', '../Data/Product/Copy of features.csv', DB_URL, Features, this.cleanFeatures);
     },
 
@@ -99,7 +116,7 @@ const ETL = {
 
 
 
-ETL.importRelated();
+ETL.importFeaturesToOldDB();
 
 
 // Example usage:
