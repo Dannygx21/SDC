@@ -64,27 +64,30 @@ app.get('/products/:product_id/related', async (req, res) => {
 // this endpoint returns styles and skus for a given product
 // TODO : merge styles and skus into one response
 app.get('/products/:product_id/styles', async (req, res) => {
-    console.log('Received request for product styles of product ID:', req.params.product_id);
-    const response = {}
-    StylesController.getStylesByProductId(Number(req.params.product_id)).then(styles => {
-        response.styles = styles;
-    })
-    const stylesArr = response.styl
-
-
-    SKUsController.getSKUsByStylesId(Number())
-        .then(product => res.status(200).send(product))
+    console.log('Received request for styles by ID:', req.params.product_id);
+    StylesController.getStylesByProductId(Number(req.params.product_id))
+        .then(async (styles) => {
+            // for each style, get the skus
+            const stylesWithSkus = await Promise.all(styles.map(async (style) => {
+                const skus = await SKUsController.getSKUsByStylesId(style.style_id);
+                return { ...style.toObject(), skus: skus };
+            }));
+            res.status(200).send({ product_id: req.params.product_id, results: stylesWithSkus });
+        })
         .catch(err => {
             console.error('Error fetching product by ID in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
         })
+
 })
 
 // Test ENDPOINT
 app.get('/products/:product_id/styles/test', async (req, res) => {
     console.log('TEST Received request for styles by ID:', req.params.product_id);
     StylesController.getStylesByProductId(Number(req.params.product_id))
-        .then(product => res.status(200).send(product))
+        .then(product =>
+            console.log('TEST styles fetched:', product[0]._id, typeof product[0]._id) ||
+            res.status(200).send(product))
         .catch(err => {
             console.error('Error fetching product by ID in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
