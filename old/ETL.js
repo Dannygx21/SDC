@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Product = require('../Schemas/Models/Products.js')
 const Related = require('../Schemas/Models/Related.js')
 const Features = require('../Schemas/Models/Features.js')
+const SKUs = require('../Schemas/Models/SKUs.js')
+const Styles = require('../Schemas/Models/Styles.js')
 
 require('dotenv').config({ path: '../.env' });
 const { DB_URL2, DB_USER, DB_PASS, DB_URL } = process.env
@@ -99,6 +101,29 @@ const ETL = {
         };
     },
 
+    cleanSKUs: function (data) {
+        return {
+            id: Number(data.id),
+            style_id: Number(data.styleId),
+            size: data.size,
+            quantity: Number(data.quantity)
+        };
+    },
+
+    cleanStyles: function (data) {
+        if (data.sale_price === 'null') {
+            data.sale_price = undefined;
+        }
+        return {
+            style_id: Number(data.id),
+            product_id: Number(data.productId),
+            name: data.name,
+            sale_price: data.sale_price,
+            original_price: Number(data.original_price),
+            default_style: data.default_style === '1' ? true : false
+        };
+    },
+
     importProductsToOldDB: function async() {
         this.mainImport('Catwalk-old', 'Product', '../Data/Product/Copy of product.csv', DB_URL, Product, this.cleanProducts);
     },
@@ -111,12 +136,20 @@ const ETL = {
         this.mainImport('Catwalk-old', 'Features', '../Data/Product/Copy of features.csv', DB_URL, Features, this.cleanFeatures);
     },
 
+    importSKUsToOldDB: function () {
+        this.mainImport('Catwalk-old', 'SKUs', '../Data/Product/Copy of skus.csv', DB_URL, SKUs, this.cleanSKUs);
+    },
+
+    importStylesToOldDB: function () {
+        this.mainImport('Catwalk-old', 'Styles', '../Data/Product/Copy of styles.csv', DB_URL, Styles, this.cleanStyles);
+    }
+
 
 }
 
 
 
-ETL.importFeaturesToOldDB();
+ETL.importStylesToOldDB();
 
 
 // Example usage:

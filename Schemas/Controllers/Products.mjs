@@ -10,5 +10,15 @@ export const ProductController = {
         } catch (error) {
             throw new Error('Error fetching products by page and count: ' + error.message);
         }
+    },
+
+    getProductById: async function (productId) {
+        try {
+            const product = await Product.findOne({ id: productId });
+            return product;
+        } catch (error) {
+            throw new Error('Error fetching product by ID: ' + error.message);
+        }
+
     }
 };
