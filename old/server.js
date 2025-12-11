@@ -8,6 +8,7 @@ const { SKUsController } = require('../Schemas/Controllers/SKUs.mjs');
 const { StylesController } = require('../Schemas/Controllers/Styles.mjs');
 const { AnswersController } = require('../Schemas/Controllers/Answers.mjs');
 const { AnswerPhotosController } = require('../Schemas/Controllers/AnswerPhotos.mjs');
+const { QuestionsController } = require('../Schemas/Controllers/Questions.mjs');
 const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env
 
 //server
@@ -94,14 +95,21 @@ app.get('/qa/questions/:question_id/answers', async (req, res) => {
                 return { ...answer.toObject(), photos: photos };
             }));
 
-            res.status(200).send({
-                question: req.params.question_id,
-                results: answersWithPhotos
-            });
+            res.status(200).send(answersWithPhotos);
         })
 
         .catch(err => {
             console.error('Error fetching answers by question ID in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
+
+app.get('/qa/questions/:product_id/:count/:page', async (req, res) => {
+    console.log('Received request for questions by product ID:', req.params.product_id, 'page:', req.params.page, 'count:', req.params.count);
+    QuestionsController.getQuestionsByProductId(Number(req.params.product_id), Number(req.params.page), Number(req.params.count))
+        .then(questions => res.status(200).send(questions))
+        .catch(err => {
+            console.error('Error fetching questions by product ID in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
         })
 })
