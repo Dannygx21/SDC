@@ -1,4 +1,4 @@
-import AnswerPhotos from "../Models/AnswerPhotos";
+import AnswerPhotos from "../Models/AnswerPhotos.js";
 
 export const AnswerPhotosController = {
 

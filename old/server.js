@@ -7,11 +7,12 @@ const { FeaturesController } = require('../Schemas/Controllers/Features.mjs');
 const { SKUsController } = require('../Schemas/Controllers/SKUs.mjs');
 const { StylesController } = require('../Schemas/Controllers/Styles.mjs');
 const { AnswersController } = require('../Schemas/Controllers/Answers.mjs');
+const { AnswerPhotosController } = require('../Schemas/Controllers/AnswerPhotos.mjs');
 const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env
 
 //server
 const cors = require('cors')
-const express = require('express')
+const express = require('express');
 const app = express()
 
 app.use(cors())
@@ -82,10 +83,23 @@ app.get('/products/:product_id/styles', async (req, res) => {
 
 })
 
+// endpoint to get answers by question ID, as well as associated answer photos (merged)
 app.get('/qa/questions/:question_id/answers', async (req, res) => {
     console.log('Received request for answers by question ID:', req.params.question_id);
     AnswersController.getAnswersByQuestionId(Number(req.params.question_id))
-        .then(answers => res.status(200).send(answers))
+        .then(async (answers) => {
+            //for each answer, get the photos
+            const answersWithPhotos = await Promise.all(answers.map(async (answer) => {
+                const photos = await AnswerPhotosController.getAnswerPhotosByAnswerId(answer.id);
+                return { ...answer.toObject(), photos: photos };
+            }));
+
+            res.status(200).send({
+                question: req.params.question_id,
+                results: answersWithPhotos
+            });
+        })
+
         .catch(err => {
             console.error('Error fetching answers by question ID in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
