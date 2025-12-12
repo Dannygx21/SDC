@@ -7,6 +7,7 @@ const Styles = require('../Schemas/Models/Styles.js')
 const Answers = require('../Schemas/Models/Answers.js')
 const AnswerPhotos = require('../Schemas/Models/AnswerPhotos.js')
 const Questions = require('../Schemas/Models/Questions.js')
+const Characteristics = require('../Schemas/Models/Characteristics.js')
 
 require('dotenv').config({ path: '../.env' });
 const { DB_URL2, DB_USER, DB_PASS, DB_URL } = process.env
@@ -49,7 +50,7 @@ const ETL = {
                         mongoose_model.insertMany(action(data)).then(() => {
                             console.log('Inserted record');
                         }).catch(err => {
-                            console.error(`Error inserting record`);
+                            console.error(`Error inserting record`, err);
                         });
                         count++
                     }
@@ -164,6 +165,14 @@ const ETL = {
         };
     },
 
+    cleanCharacteristics: function (data) {
+        return {
+            id: Number(data.id),
+            product_id: Number(data.product_id),
+            name: data.name,
+        };
+    },
+
     importProductsToOldDB: function async() {
         this.mainImport('Catwalk-old', 'Product', '../Data/Product/Copy of product.csv', DB_URL, Product, this.cleanProducts);
     },
@@ -194,6 +203,10 @@ const ETL = {
 
     importQuestionsToOldDB: function () {
         this.mainImport('Catwalk-old', 'Questions', '../Data/QA/questions.csv', DB_URL, Questions, this.cleanQuestions);
+    },
+
+    importCharacteristicsToOldDB: function () {
+        this.mainImport('Catwalk-old', 'Characteristics', '../Data/Reviews/characteristics.csv', DB_URL, Characteristics, this.cleanCharacteristics);
     }
 
 
@@ -201,7 +214,7 @@ const ETL = {
 
 
 
-ETL.importQuestionsToOldDB();
+ETL.importCharacteristicsToOldDB();
 
 
 // Example usage:
