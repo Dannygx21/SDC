@@ -116,6 +116,7 @@ app.get('/qa/questions', async (req, res) => {
         })
 })
 
+
 // Test ENDPOINT
 app.get('/products/:product_id/styles/test', async (req, res) => {
     console.log('TEST Received request for styles by ID:', req.params.product_id);
