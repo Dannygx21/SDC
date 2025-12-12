@@ -10,6 +10,7 @@ const Questions = require('../Schemas/Models/Questions.js')
 const Characteristics = require('../Schemas/Models/Characteristics.js')
 const CharacteristicReviews = require('../Schemas/Models/CharacteristicReviews.js')
 const ReviewPhotos = require('../Schemas/Models/ReviewPhotos.js')
+const Reviews = require('../Schemas/Models/Reviews.js')
 
 require('dotenv').config({ path: '../.env' });
 const { DB_URL2, DB_USER, DB_PASS, DB_URL } = process.env
@@ -192,6 +193,23 @@ const ETL = {
         };
     },
 
+    cleanReviews: function (data) {
+        return {
+            id: Number(data.id),
+            product_id: Number(data.product_id),
+            rating: Number(data.rating),
+            date: data.date,
+            summary: data.summary,
+            body: data.body,
+            recommend: data.recommend === '1' ? true : false,
+            reported: data.reported === '1' ? true : false,
+            reviewer_name: data.reviewer_name,
+            reviewer_email: data.reviewer_email,
+            response: data.response === 'null' ? null : data.response,
+            helpfulness: Number(data.helpfulness),
+        };
+    },
+
     importProductsToOldDB: function async() {
         this.mainImport('Catwalk-old', 'Product', '../Data/Product/Copy of product.csv', DB_URL, Product, this.cleanProducts);
     },
@@ -234,6 +252,10 @@ const ETL = {
 
     importReviewPhotosToOldDB: function () {
         this.mainImport('Catwalk-old', 'ReviewPhotos', '../Data/Reviews/reviews_photos.csv', DB_URL, ReviewPhotos, this.cleanReviewPhotos);
+    },
+
+    importReviewsToOldDB: function () {
+        this.mainImport('Catwalk-old', 'Reviews', '../Data/Reviews/reviews.csv', DB_URL, Reviews, this.cleanReviews);
     }
 
 
@@ -241,7 +263,7 @@ const ETL = {
 
 
 
-ETL.importReviewPhotosToOldDB();
+ETL.importReviewsToOldDB();
 
 
 // Example usage:
