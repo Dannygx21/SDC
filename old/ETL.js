@@ -104,9 +104,9 @@ const ETL = {
         }
         return {
             id: Number(data.id),
-            currentproduct_id: Number(data.currentproduct_id),
-            type: data.type,
-            feature: data.feature
+            product_id: Number(data.product_id),
+            feature: data.feature,
+            value: data.value
         };
     },
 
@@ -263,7 +263,7 @@ const ETL = {
 
 
 
-ETL.importReviewsToOldDB();
+ETL.importFeaturesToOldDB();
 
 
 // Example usage:

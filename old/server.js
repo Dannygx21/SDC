@@ -9,6 +9,7 @@ const { StylesController } = require('../Schemas/Controllers/Styles.mjs');
 const { AnswersController } = require('../Schemas/Controllers/Answers.mjs');
 const { AnswerPhotosController } = require('../Schemas/Controllers/AnswerPhotos.mjs');
 const { QuestionsController } = require('../Schemas/Controllers/Questions.mjs');
+const { ReviewsController } = require('../Schemas/Controllers/Reviews.mjs');
 const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env
 
 //server
@@ -112,6 +113,18 @@ app.get('/qa/questions', async (req, res) => {
         })
         .catch(err => {
             console.error('Error fetching questions by product ID in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
+
+app.get('/reviews', async (req, res) => {
+    console.log('Received request for reviews for product ID:', req.query.product_id, 'page:', req.query.page, 'count:', req.query.count, 'sort:', req.query.sort);
+    ReviewsController.getReviewsByProductIdByPageCountAndSort(Number(req.query.product_id), Number(req.query.page), Number(req.query.count), req.query.sort)
+        .then((reviews) => {
+            res.status(200).send(reviews)
+        })
+        .catch(err => {
+            console.error('Error fetching reviews by product ID in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
         })
 })

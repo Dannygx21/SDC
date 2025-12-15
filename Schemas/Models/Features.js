@@ -5,15 +5,15 @@ const featuresSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    currentproduct_id: {
+    product_id: {
         type: Number,
         required: true
     },
-    type: {
+    feature: {
         type: String,
         required: true
     },
-    feature: {
+    value: {
         type: String,
         required: false,
         default: undefined
