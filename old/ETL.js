@@ -196,7 +196,7 @@ const ETL = {
 
     cleanReviews: function (data) {
         return {
-            id: Number(data.id),
+            review_id: Number(data.id),
             product_id: Number(data.product_id),
             rating: Number(data.rating),
             date: data.date,
@@ -206,7 +206,7 @@ const ETL = {
             reported: data.reported === '1' ? true : false,
             reviewer_name: data.reviewer_name,
             reviewer_email: data.reviewer_email,
-            response: data.response === 'null' ? null : data.response,
+            response: data.response === 'null' ? undefined : data.response,
             helpfulness: Number(data.helpfulness),
         };
     },
@@ -277,7 +277,7 @@ const ETL = {
 
 
 
-ETL.importPhotosToOldDB();
+ETL.importReviewsToOldDB();
 
 
 // Example usage:

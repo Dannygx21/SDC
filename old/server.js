@@ -11,11 +11,13 @@ const { AnswerPhotosController } = require('../Schemas/Controllers/AnswerPhotos.
 const { QuestionsController } = require('../Schemas/Controllers/Questions.mjs');
 const { ReviewsController } = require('../Schemas/Controllers/Reviews.mjs');
 const { PhotosController } = require('../Schemas/Controllers/Photos.mjs');
+const { ReviewPhotosController } = require('../Schemas/Controllers/ReviewPhotos.mjs');
 const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env
 
 //server
 const cors = require('cors')
 const express = require('express');
+const ReviewPhotos = require('../Schemas/Models/ReviewPhotos');
 const app = express()
 
 app.use(cors())
@@ -134,8 +136,12 @@ app.get('/qa/questions', async (req, res) => {
 app.get('/reviews', async (req, res) => {
     console.log('Received request for reviews for product ID:', req.query.product_id, 'page:', req.query.page, 'count:', req.query.count, 'sort:', req.query.sort);
     ReviewsController.getReviewsByProductIdByPageCountAndSort(Number(req.query.product_id), Number(req.query.page), Number(req.query.count), req.query.sort)
-        .then((reviews) => {
-            res.status(200).send(reviews)
+        .then(async (reviews) => {
+            const reviewPhotos = await Promise.all(reviews.map(async (review) => {
+                const photos = await ReviewPhotosController.getReviewPhotosByReviewId(review.review_id);
+                return { ...review.toObject(), photos: photos };
+            }));
+            res.status(200).send(reviewPhotos);
         })
         .catch(err => {
             console.error('Error fetching reviews by product ID in server:', err)
@@ -143,6 +149,17 @@ app.get('/reviews', async (req, res) => {
         })
 })
 
+app.post('/reviews', async (req, res) => {
+    console.log('Received request to post a new review:', req.body);
+    ReviewsController.postReview(req.body)
+        .then(() => {
+            res.sendStatus(201)
+        })
+        .catch(err => {
+            console.error('Error posting new review in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
 
 // Test ENDPOINT
 app.get('/products/:product_id/styles/test', async (req, res) => {

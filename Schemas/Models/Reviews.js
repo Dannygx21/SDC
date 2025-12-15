@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const reviewsSchema = new mongoose.Schema({
-    id: {
+    review_id: {
         type: Number,
         required: true,
         unique: true
@@ -43,7 +43,7 @@ const reviewsSchema = new mongoose.Schema({
     },
     response: {
         type: String,
-        default: null
+        default: undefined
     },
     helpfulness: {
         type: Number,
