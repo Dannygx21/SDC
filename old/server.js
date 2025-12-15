@@ -10,6 +10,7 @@ const { AnswersController } = require('../Schemas/Controllers/Answers.mjs');
 const { AnswerPhotosController } = require('../Schemas/Controllers/AnswerPhotos.mjs');
 const { QuestionsController } = require('../Schemas/Controllers/Questions.mjs');
 const { ReviewsController } = require('../Schemas/Controllers/Reviews.mjs');
+const { PhotosController } = require('../Schemas/Controllers/Photos.mjs');
 const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env
 
 //server
@@ -35,10 +36,15 @@ app.get('/', async (req, res) => {
     res.sendStatus(200)
 })
 
+// endpoint to get product by ID adds Features to the response
 app.get('/products/:product_id', async (req, res) => {
     console.log('Received request for product ID:', req.params.product_id);
     ProductController.getProductById(Number(req.params.product_id))
-        .then(product => res.status(200).send(product))
+        .then(async (product) => {
+            const features = await FeaturesController.getFeaturesByProductId(Number(req.params.product_id));
+            console.log('Features fetched for product ID:', req.params.product_id, features);
+            res.status(200).send({ ...product.toObject(), features: features });
+        })
         .catch(err => {
             console.error('Error fetching product by ID in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
@@ -58,7 +64,10 @@ app.get('/products', async (req, res) => {
 app.get('/products/:product_id/related', async (req, res) => {
     console.log('Received request for related items of product ID:', req.params.product_id);
     RelatedController.getRelatedByProductId(Number(req.params.product_id))
-        .then(relatedItems => res.status(200).send(relatedItems))
+        .then(items => {
+            const arr = items.map(item => item.related_product_id)
+            res.status(200).send(arr)
+        })
         .catch(err => {
             console.error('Error fetching related items by product ID in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
@@ -72,11 +81,16 @@ app.get('/products/:product_id/styles', async (req, res) => {
     StylesController.getStylesByProductId(Number(req.params.product_id))
         .then(async (styles) => {
             // for each style, get the skus
-            const stylesWithSkus = await Promise.all(styles.map(async (style) => {
+            const results = await Promise.all(styles.map(async (style) => {
+                const photos = await PhotosController.getPhotosByStyleId(style.style_id);
                 const skus = await SKUsController.getSKUsByStylesId(style.style_id);
-                return { ...style.toObject(), skus: skus };
+                const skusObj = skus.reduce((acc, sku) => {
+                    acc[sku.id] = { quantity: sku.quantity, size: sku.size };
+                    return acc;
+                }, {});
+                return { ...style.toObject(), photos: photos, skus: skusObj };
             }));
-            res.status(200).send({ product_id: req.params.product_id, results: stylesWithSkus });
+            res.status(200).send({ product_id: req.params.product_id, results: results });
         })
         .catch(err => {
             console.error('Error fetching product by ID in server:', err)
