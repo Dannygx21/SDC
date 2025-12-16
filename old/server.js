@@ -45,8 +45,13 @@ app.get('/products/:product_id', async (req, res) => {
     console.log('Received request for product ID:', req.params.product_id);
     ProductController.getProductById(Number(req.params.product_id))
         .then(async (product) => {
-            const features = await FeaturesController.getFeaturesByProductId(Number(req.params.product_id));
-            res.status(200).send({ ...product.toObject(), features: features });
+            if (!!product) {
+                const features = await FeaturesController.getFeaturesByProductId(Number(req.params.product_id));
+                res.status(200).send({ ...product.toObject(), features: features });
+            } else {
+                // handle product ID not found
+
+            }
         })
         .catch(err => {
             console.error('Error fetching product by ID in server:', err)
@@ -299,9 +304,11 @@ app.get('/reviews/meta', async (req, res) => {
             await Promise.all(characteristics.map(async (characteristic) => {
                 const charReviews = await CharacteristicReviewsController.getCharacteristicReviewsByCharacteristicId(characteristic.id);
                 const total = charReviews.reduce((sum, cr) => sum + cr.value, 0);
-                const average = 0
+                let average;
                 if (charReviews.length > 0) {
                     average = total / charReviews.length;
+                } else {
+                    average = 0;
                 }
                 characteristicsObj[characteristic.name] = {
                     id: characteristic.id,
