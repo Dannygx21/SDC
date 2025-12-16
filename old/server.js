@@ -12,6 +12,8 @@ const { QuestionsController } = require('../Schemas/Controllers/Questions.mjs');
 const { ReviewsController } = require('../Schemas/Controllers/Reviews.mjs');
 const { PhotosController } = require('../Schemas/Controllers/Photos.mjs');
 const { ReviewPhotosController } = require('../Schemas/Controllers/ReviewPhotos.mjs');
+const { CharacteristicsController } = require('../Schemas/Controllers/Characteristics.mjs');
+const { CharacteristicReviewsController } = require('../Schemas/Controllers/CharacteristicReviews.mjs');
 const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env
 
 //server
@@ -149,14 +151,107 @@ app.get('/reviews', async (req, res) => {
         })
 })
 
+app.get('/reviews/meta', async (req, res) => {
+    console.log('Received request for review metadata for product ID:', req.query.product_id);
+    const response = {}
+    Promise.all([
+        ReviewsController.getReviewsByProductIdByPageCountAndSort(Number(req.query.product_id), 1, 1000, 'newest'),
+        CharacteristicsController.getCharacteristicsByProductId(Number(req.query.product_id))
+    ])
+        .then(async ([reviews, characteristics]) => {
+            //ratings and recommended
+            const ratings = {};
+            const recommended = { false: 0, true: 0 };
+            reviews.forEach(review => {
+                ratings[review.rating] = (ratings[review.rating] || 0) + 1;
+                recommended[review.recommend] += 1;
+            });
+            response.product_id = req.query.product_id;
+            response.ratings = ratings;
+            response.recommended = recommended;
+            //characteristics
+            const characteristicsObj = {};
+            await Promise.all(characteristics.map(async (characteristic) => {
+                const charReviews = await CharacteristicReviewsController.getCharacteristicReviewsByCharacteristicId(characteristic.id);
+                const total = charReviews.reduce((sum, cr) => sum + cr.value, 0);
+                const average = total / charReviews.length;
+                characteristicsObj[characteristic.name] = {
+                    id: characteristic.id,
+                    value: average.toFixed(4)
+                };
+            }));
+            response.characteristics = characteristicsObj;
+            res.status(200).send(response);
+        })
+        .catch(err => {
+            console.error('Error fetching review metadata by product ID in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
+
+app.get('/characteristics/:product_id', async (req, res) => {
+    console.log('Received request for characteristics for product ID:', req.params.product_id);
+    CharacteristicsController.getCharacteristicsByProductId(Number(req.params.product_id))
+        .then((characteristics) => {
+            res.status(200).send(characteristics);
+        })
+        .catch(err => {
+            console.error('Error fetching characteristics by product ID in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
+
 app.post('/reviews', async (req, res) => {
-    console.log('Received request to post a new review:', req.body);
-    ReviewsController.postReview(req.body)
-        .then(() => {
-            res.sendStatus(201)
+    console.log('Received request to post new review with data:', req.body);
+    const { photos, characteristics, ...reviewData } = req.body;
+    reviewData.date = new Date().toISOString();
+    reviewData.reported = false;
+    reviewData.helpfulness = 0;
+    ReviewsController.postReview(reviewData)
+        .then(async (newReview) => {
+            //handle photos
+            if (photos && photos.length > 0) {
+                await Promise.all(photos.map(async (url) => {
+                    const newPhoto = await ReviewPhotosController.addReviewPhoto(newReview.review_id, url);
+                    return newPhoto;
+                }));
+            }
+            //handle characteristic reviews
+            if (characteristics) {
+                await Promise.all(Object.entries(characteristics).map(async ([characteristicId, value]) => {
+                    const newCharReview = await CharacteristicReviewsController.addCharacteristicReview(Number(characteristicId), newReview.review_id, value);
+                    return newCharReview;
+                }));
+            }
+            res.status(201).send(newReview);
         })
         .catch(err => {
             console.error('Error posting new review in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+
+});
+
+app.put('/reviews/:review_id/helpful', async (req, res) => {
+    console.log('Received request to mark review as helpful, review ID:', req.params.review_id);
+    ReviewsController.markReviewAsHelpful(Number(req.params.review_id))
+        .then(() => {
+            res.sendStatus(204)
+        })
+        .catch(err => {
+            console.error('Error marking review as helpful in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
+
+app.put('/reviews/:review_id/report', async (req, res) => {
+    console.log('Received request to report review, review ID:', req.params.review_id);
+    ReviewsController.reportReview(Number(req.params.review_id))
+        .then(() => {
+            res.sendStatus(204)
+        })
+        .catch(err => {
+            console.error('Error reporting review in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
         })
 })

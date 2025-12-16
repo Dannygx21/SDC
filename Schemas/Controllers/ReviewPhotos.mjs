@@ -8,5 +8,16 @@ export const ReviewPhotosController = {
             console.error("Error fetching review photos:", error);
             throw error;
         }
+    },
+
+    createReviewPhotos: async (review_id, photos) => {
+        try {
+            const photoDocs = photos.map(url => ({ review_id: review_id, url: url }));
+            await ReviewPhotos.insertMany(photoDocs);
+            console.log("Review photos created successfully for review_id:", review_id);
+        } catch (error) {
+            console.error("Error creating review photos:", error);
+            throw error;
+        }
     }
 };
