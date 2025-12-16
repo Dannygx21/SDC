@@ -136,14 +136,14 @@ const ETL = {
 
     cleanAnswers: function (data) {
         return {
-            id: Number(data.id),
+            answer_id: Number(data.id),
             question_id: Number(data.question_id),
             body: data.body,
-            date_written: data.date_written,
+            date: data.date_written,
             answerer_name: data.answerer_name,
             answerer_email: data.answerer_email,
             reported: data.reported === '1' ? true : false,
-            helpful: Number(data.helpful),
+            helpfulness: Number(data.helpful),
         };
     },
 
@@ -158,14 +158,14 @@ const ETL = {
 
     cleanQuestions: function (data) {
         return {
-            id: Number(data.id),
+            question_id: Number(data.id),
             product_id: Number(data.product_id),
-            body: data.body,
-            date_written: data.date_written,
+            question_body: data.body,
+            question_date: data.date_written,
             asker_name: data.asker_name,
             asker_email: data.asker_email,
             reported: data.reported === '1' ? true : false,
-            helpful: Number(data.helpful),
+            question_helpfulness: Number(data.helpful),
         };
     },
 
@@ -277,7 +277,7 @@ const ETL = {
 
 
 
-ETL.importReviewsToOldDB();
+ETL.importAnswersToOldDB();
 
 
 // Example usage:

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const answersSchema = new mongoose.Schema({
-    id: {
+    answer_id: {
         type: Number,
         required: true,
         unique: true
@@ -13,7 +13,7 @@ const answersSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    date_written: {
+    date: {
         type: Date,
         required: true,
         default: Date.now
@@ -31,7 +31,7 @@ const answersSchema = new mongoose.Schema({
         required: true,
         default: false
     },
-    helpful: {
+    helpfulness: {
         type: Number,
         required: true,
         default: 0

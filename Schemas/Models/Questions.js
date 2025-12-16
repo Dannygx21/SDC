@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const questionsSchema = new mongoose.Schema({
-    id: {
+    question_id: {
         type: Number,
         required: true,
         unique: true
@@ -10,11 +10,11 @@ const questionsSchema = new mongoose.Schema({
         required: true,
         index: true
     },
-    body: {
+    question_body: {
         type: String,
         required: true
     },
-    date_written: {
+    question_date: {
         type: Date,
         required: true
     },
@@ -31,7 +31,7 @@ const questionsSchema = new mongoose.Schema({
         required: true,
         default: false
     },
-    helpful: {
+    question_helpfulness: {
         type: Number,
         required: true,
         default: 0

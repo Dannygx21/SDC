@@ -46,7 +46,6 @@ app.get('/products/:product_id', async (req, res) => {
     ProductController.getProductById(Number(req.params.product_id))
         .then(async (product) => {
             const features = await FeaturesController.getFeaturesByProductId(Number(req.params.product_id));
-            console.log('Features fetched for product ID:', req.params.product_id, features);
             res.status(200).send({ ...product.toObject(), features: features });
         })
         .catch(err => {
@@ -87,6 +86,10 @@ app.get('/products/:product_id/styles', async (req, res) => {
             // for each style, get the skus
             const results = await Promise.all(styles.map(async (style) => {
                 const photos = await PhotosController.getPhotosByStyleId(style.style_id);
+                if (!photos || photos.length === 0) {
+                    console.log('No photos found for style ID:', style.style_id);
+                    photos.push({ thumbnail_url: 'https://unsplash.com/photos/white-egg-with-face-illustration-WtolM5hsj14', url: 'https://unsplash.com/photos/white-egg-with-face-illustration-WtolM5hsj14' });
+                }
                 const skus = await SKUsController.getSKUsByStylesId(style.style_id);
                 const skusObj = skus.reduce((acc, sku) => {
                     acc[sku.id] = { quantity: sku.quantity, size: sku.size };
@@ -105,18 +108,17 @@ app.get('/products/:product_id/styles', async (req, res) => {
 
 // endpoint to get answers by question ID, as well as associated answer photos (merged)
 app.get('/qa/questions/:question_id/answers', async (req, res) => {
-    console.log('Received request for answers by question ID:', req.params.question_id);
+    console.log('Received request for answers by question ID:', req.params.question_id)
+    console.log('this was called')
     AnswersController.getAnswersByQuestionId(Number(req.params.question_id))
         .then(async (answers) => {
-            //for each answer, get the photos
+            // for each answer, get the photos
             const answersWithPhotos = await Promise.all(answers.map(async (answer) => {
-                const photos = await AnswerPhotosController.getAnswerPhotosByAnswerId(answer.id);
+                const photos = await AnswerPhotosController.getAnswerPhotosByAnswerId(answer.answer_id);
                 return { ...answer.toObject(), photos: photos };
             }));
-
-            res.status(200).send(answersWithPhotos);
+            res.status(200).send({ question: req.params.question_id, page: 1, count: answersWithPhotos.length, results: answersWithPhotos });
         })
-
         .catch(err => {
             console.error('Error fetching answers by question ID in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
@@ -124,13 +126,136 @@ app.get('/qa/questions/:question_id/answers', async (req, res) => {
 })
 
 app.get('/qa/questions', async (req, res) => {
-    console.log('Received request for questions by product ID:', req.query.product_id, 'page:', req.query.page, 'count:', req.query.count);
+    console.log('Received request for questions for product ID:', req.query.product_id, 'page:', req.query.page, 'count:', req.query.count);
     QuestionsController.getQuestionsByProductId(Number(req.query.product_id), Number(req.query.page), Number(req.query.count))
-        .then((questions) => {
-            res.status(200).send(questions)
+        .then(questions => {
+            // for each question, get the answers
+            Promise.all(questions.map(async (question) => {
+                const answers = await AnswersController.getAnswersByQuestionId(question.question_id);
+                // for each answer, get the photos
+                const answersWithPhotos = await Promise.all(answers.map(async (answer) => {
+                    const photos = await AnswerPhotosController.getAnswerPhotosByAnswerId(answer.id);
+                    return { ...answer.toObject(), photos: photos };
+                }));
+                return { ...question.toObject(), answers: answersWithPhotos };
+            }))
+                .then(questionsWithAnswers => {
+                    // format answers as an object with answer_id as key
+                    const formattedQuestions = questionsWithAnswers.map(question => {
+                        const answersObj = {};
+                        question.answers.forEach(answer => {
+                            answersObj[answer.id] = answer;
+                        });
+                        return { ...question, answers: answersObj };
+                    });
+                    res.status(200).send({ product_id: req.query.product_id, results: formattedQuestions });
+                })
+                .catch(err => {
+                    console.error('Error fetching answers for questions in server:', err)
+                    res.status(500).json({ error: 'Internal Server Error' })
+                })
         })
         .catch(err => {
             console.error('Error fetching questions by product ID in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
+
+// endpoint to post a new question
+app.post('/qa/questions', async (req, res) => {
+    console.log('Received request to post new question with data:', req.body);
+    const questionData = {
+        product_id: req.body.product_id,
+        body: req.body.body,
+        date: new Date().toISOString(),
+        asker_name: req.body.asker_name,
+        asker_email: req.body.asker_email,
+        reported: false,
+        helpfulness: 0
+    };
+    QuestionsController.postQuestion(questionData)
+        .then(newQuestion => {
+            res.status(201).send();
+        })
+        .catch(err => {
+            console.error('Error posting new question in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+});
+
+// endpoint to post a new answer
+app.post('/qa/questions/:question_id/answers', async (req, res) => {
+    console.log('Received request to post new answer for question ID:', req.params.question_id, 'with data:', req.body);
+    const answerData = {
+        question_id: Number(req.params.question_id),
+        body: req.body.body,
+        date: new Date().toISOString(),
+        answerer_name: req.body.answerer_name,
+        answerer_email: req.body.answerer_email,
+        reported: false,
+        helpfulness: 0
+    };
+    AnswersController.postAnswer(answerData)
+        .then(async (newAnswer) => {
+            // handle photos
+            if (req.body.photos && req.body.photos.length > 0) {
+                await Promise.all(req.body.photos.map(async (url) => {
+                    const newPhoto = await AnswerPhotosController.addAnswerPhoto(newAnswer.answer_id, url);
+                    return newPhoto;
+                }));
+            }
+            res.status(201).send();
+        })
+        .catch(err => {
+            console.error('Error posting new answer in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+});
+
+app.put('/qa/questions/:question_id/helpful', async (req, res) => {
+    console.log('Received request to mark question as helpful, question ID:', req.params.question_id);
+    QuestionsController.markQuestionAsHelpful(Number(req.params.question_id))
+        .then(() => {
+            res.sendStatus(204)
+        })
+        .catch(err => {
+            console.error('Error marking question as helpful in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
+
+app.put('/qa/questions/:question_id/report', async (req, res) => {
+    console.log('Received request to report question, question ID:', req.params.question_id);
+    QuestionsController.reportQuestion(Number(req.params.question_id))
+        .then(() => {
+            res.sendStatus(204)
+        })
+        .catch(err => {
+            console.error('Error reporting question in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
+
+app.put('/qa/answers/:answer_id/helpful', async (req, res) => {
+    console.log('Received request to mark answer as helpful, answer ID:', req.params.answer_id);
+    AnswersController.markAnswerAsHelpful(Number(req.params.answer_id))
+        .then(() => {
+            res.sendStatus(204)
+        })
+        .catch(err => {
+            console.error('Error marking answer as helpful in server:', err)
+            res.status(500).json({ error: 'Internal Server Error' })
+        })
+})
+
+app.put('/qa/answers/:answer_id/report', async (req, res) => {
+    console.log('Received request to report answer, answer ID:', req.params.answer_id);
+    AnswersController.reportAnswer(Number(req.params.answer_id))
+        .then(() => {
+            res.sendStatus(204)
+        })
+        .catch(err => {
+            console.error('Error reporting answer in server:', err)
             res.status(500).json({ error: 'Internal Server Error' })
         })
 })
@@ -143,7 +268,7 @@ app.get('/reviews', async (req, res) => {
                 const photos = await ReviewPhotosController.getReviewPhotosByReviewId(review.review_id);
                 return { ...review.toObject(), photos: photos };
             }));
-            res.status(200).send(reviewPhotos);
+            res.status(200).send({ product_id: req.query.product_id, results: reviewPhotos });
         })
         .catch(err => {
             console.error('Error fetching reviews by product ID in server:', err)
@@ -174,13 +299,17 @@ app.get('/reviews/meta', async (req, res) => {
             await Promise.all(characteristics.map(async (characteristic) => {
                 const charReviews = await CharacteristicReviewsController.getCharacteristicReviewsByCharacteristicId(characteristic.id);
                 const total = charReviews.reduce((sum, cr) => sum + cr.value, 0);
-                const average = total / charReviews.length;
+                const average = 0
+                if (charReviews.length > 0) {
+                    average = total / charReviews.length;
+                }
                 characteristicsObj[characteristic.name] = {
                     id: characteristic.id,
                     value: average.toFixed(4)
                 };
             }));
             response.characteristics = characteristicsObj;
+            console.log('Review metadata response for product ID:', req.query.product_id, response);
             res.status(200).send(response);
         })
         .catch(err => {
