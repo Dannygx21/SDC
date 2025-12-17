@@ -1,17 +1,4 @@
 const mongoose = require('mongoose');
-// const Product = require('../Schemas/Models/Product.js')
-// const Related = require('../Schemas/Models/Related.js')
-// const Features = require('../Schemas/Models/Features.js')
-// const SKUs = require('../Schemas/Models/SKUs.js')
-// const Styles = require('../Schemas/Models/Styles.js')
-// const Answers = require('../Schemas/Models/Answers.js')
-// const AnswerPhotos = require('../Schemas/Models/AnswerPhotos.js')
-// const Questions = require('../Schemas/Models/Questions.js')
-// const Characteristics = require('../Schemas/Models/Characteristics.js')
-// const CharacteristicReviews = require('../Schemas/Models/CharacteristicReviews.js')
-// const ReviewPhotos = require('../Schemas/Models/ReviewPhotos.js')
-// const Reviews = require('../Schemas/Models/Reviews.js')
-// const Photos = require('../Schemas/Models/Photos.js')
 
 const { AnswerPhotos,
     Answers,
