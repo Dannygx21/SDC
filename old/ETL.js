@@ -1,17 +1,32 @@
 const mongoose = require('mongoose');
-const Product = require('../Schemas/Models/Products.js')
-const Related = require('../Schemas/Models/Related.js')
-const Features = require('../Schemas/Models/Features.js')
-const SKUs = require('../Schemas/Models/SKUs.js')
-const Styles = require('../Schemas/Models/Styles.js')
-const Answers = require('../Schemas/Models/Answers.js')
-const AnswerPhotos = require('../Schemas/Models/AnswerPhotos.js')
-const Questions = require('../Schemas/Models/Questions.js')
-const Characteristics = require('../Schemas/Models/Characteristics.js')
-const CharacteristicReviews = require('../Schemas/Models/CharacteristicReviews.js')
-const ReviewPhotos = require('../Schemas/Models/ReviewPhotos.js')
-const Reviews = require('../Schemas/Models/Reviews.js')
-const Photos = require('../Schemas/Models/Photos.js')
+// const Product = require('../Schemas/Models/Product.js')
+// const Related = require('../Schemas/Models/Related.js')
+// const Features = require('../Schemas/Models/Features.js')
+// const SKUs = require('../Schemas/Models/SKUs.js')
+// const Styles = require('../Schemas/Models/Styles.js')
+// const Answers = require('../Schemas/Models/Answers.js')
+// const AnswerPhotos = require('../Schemas/Models/AnswerPhotos.js')
+// const Questions = require('../Schemas/Models/Questions.js')
+// const Characteristics = require('../Schemas/Models/Characteristics.js')
+// const CharacteristicReviews = require('../Schemas/Models/CharacteristicReviews.js')
+// const ReviewPhotos = require('../Schemas/Models/ReviewPhotos.js')
+// const Reviews = require('../Schemas/Models/Reviews.js')
+// const Photos = require('../Schemas/Models/Photos.js')
+
+const { AnswerPhotos,
+    Answers,
+    CharacteristicReviews,
+    Characteristics,
+    Features,
+    Photos,
+    Product,
+    Questions,
+    Related,
+    ReviewPhotos,
+    Reviews,
+    SKUs,
+    Styles
+} = require('../Schemas/Models/index.js')
 
 require('dotenv').config({ path: '../.env' });
 const { DB_URL2, DB_USER, DB_PASS, DB_URL } = process.env
@@ -24,23 +39,34 @@ const { type } = require('os');
 
 
 const ETL = {
-    // main function to import csv programmatically
-    // action is a function to clean data before inserting into DB
-    // mongoose_model is the model to insert data into
+    connectToDB: async (dbName, collectionName, URL) => {
+        await mongoose.connect(URL, {
+            user: DB_USER,
+            pass: DB_PASS,
+            dbName: dbName
+        }).then(() => console.log(`MongoDB connected to ${collectionName} collection`))
+            .catch(err => console.log('mongodb connection error:', err));
+    },
 
-    mainImport: async (dbName, collectionName, csvFilePath, mongoUrl, mongoose_model, action) => {
+
+    // mainImort: function to import csv programmatically
+    // Parameters: 
+    // - dbName (string: db name to be used)
+    // - collectionName (string: collection or table name)
+    // - csvFilePath (string: filepath to csv to be read)
+    // - mongoUrl (string: database url)
+    // - mongoose_model (object: used to access mongoose insertmany method)
+    // - action (function: used to transform csv data object to desired database format object. ETL.noChange is a method to make no changes to the CSV data object)
+    // - test (boolean: if true, the mainImport will console log the changes without inserting any files to database. if false, files will be inserted )
+    mainImport: async (dbName, collectionName, csvFilePath, mongoUrl, mongoose_model, action, test) => {
+        // double check of what is being passed into function
         console.log('URL: ', mongoUrl)
         console.log('Database Name: ', dbName)
         console.log('collection Name: ', collectionName)
         console.log('file path: ', csvFilePath)
 
         //connect to mongoDB
-        mongoose.connect(mongoUrl, {
-            user: DB_USER,
-            pass: DB_PASS,
-            dbName: dbName
-        }).then(() => console.log('MongoDB connected for CSV import'))
-            .catch(err => console.log('mongodb connection error for CSV import:', err));
+        await ETL.connectToDB(dbName, collectionName, mongoUrl);
 
         //only allowing a certain number of records
         let count = 0
@@ -50,22 +76,24 @@ const ETL = {
                 // remove leading/trailing spaces from headers
                 .pipe(csv({ mapHeaders: ({ header }) => header.trim() }))
                 .on('data', async (data) => {
-                    if (count <= 500) {
+                    // if not a test, insert records being read
+                    if (count <= 500 && !test) {
                         mongoose_model.insertMany(action(data)).then(() => {
                             console.log('Inserted record');
                         }).catch(err => {
                             console.error(`Error inserting record`, err);
                         });
+                        //increase count for every record read
+                        count++
+                        // if a test, read records only 
+                    } else if (count <= 30 && test) {
+                        console.log('Data row: ', data)
+                        console.log('Transformed Data row: ', action(data))
+                        //increase count for every record read
                         count++
                     }
-                    // if (count <= 30) {
-                    //     console.log('Data row: ', data)
-                    //     console.log('Transformed Data row: ', action(data))
-                    //     count++
-                    // }
-
-
                 })
+                // closing database connection and cleaning up count
                 .on('end', async () => {
                     console.log('Operation ended with: ', count)
                     count = null
@@ -269,7 +297,7 @@ const ETL = {
     },
 
     importPhotosToOldDB: function () {
-        this.mainImport('Catwalk-old', 'Photos', '../Data/Product/Copy of photos.csv', DB_URL, Photos, this.cleanPhotos);
+        this.mainImport('Catwalk-old', 'Photos', '../Data/Product/Copy of photos.csv', DB_URL, Photos, this.cleanPhotos, true);
     }
 
 
@@ -277,7 +305,7 @@ const ETL = {
 
 
 
-ETL.importAnswersToOldDB();
+ETL.importPhotosToOldDB();
 
 
 // Example usage:
