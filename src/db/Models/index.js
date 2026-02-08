@@ -1,16 +1,16 @@
 
 module.exports = {
-    AnswerPhotos: require('../Models/AnswerPhotos.js'),
-    Answers: require('../Models/Answers.js'),
-    CharacteristicReviews: require('../Models/CharacteristicReviews.js'),
-    Characteristics: require('../Models/CharacteristicReviews.js'),
-    Features: require('../Models/Features.js'),
-    Photos: require('../Models/Photos.js'),
+    AnswerPhotos: require('./AnswerPhotos.js'),
+    Answers: require('./Answers.js'),
+    CharacteristicReviews: require('./CharacteristicReviews.js'),
+    Characteristics: require('./Characteristics.js'),
+    Features: require('./Features.js'),
+    Photos: require('./Photos.js'),
     Product: require('./Product.js'),
-    Questions: require('../Models/Questions.js'),
-    Related: require('../Models/Related.js'),
-    ReviewPhotos: require('../Models/ReviewPhotos.js'),
-    Reviews: require('../Models/Reviews.js'),
-    SKUs: require('../Models/SKUs.js'),
-    Styles: require('../Models/Styles.js')
+    Questions: require('./Questions.js'),
+    Related: require('./Related.js'),
+    ReviewPhotos: require('./ReviewPhotos.js'),
+    Reviews: require('./Reviews.js'),
+    SKUs: require('./SKUs.js'),
+    Styles: require('./Styles.js')
 }

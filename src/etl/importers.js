@@ -15,7 +15,7 @@ const {
     Characteristics,
     CharacteristicReviews,
     Photos,
-} = require('../models');
+} = require('../db/Models/index.js');
 
 const {
     cleanProducts,
