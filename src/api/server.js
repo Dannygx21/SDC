@@ -1,19 +1,19 @@
 // Server made to replicate Catwalk project. Catwalk project was given non-ideal API, forcing logic onto front end. This server serves as a replicate of that, to stand up catwalk application.
 require('dotenv').config()
 const mongoose = require('mongoose')
-const { ProductController } = require('../Schemas/Controllers/Products.mjs');
-const { RelatedController } = require('../Schemas/Controllers/Related.mjs');
-const { FeaturesController } = require('../Schemas/Controllers/Features.mjs');
-const { SKUsController } = require('../Schemas/Controllers/SKUs.mjs');
-const { StylesController } = require('../Schemas/Controllers/Styles.mjs');
-const { AnswersController } = require('../Schemas/Controllers/Answers.mjs');
-const { AnswerPhotosController } = require('../Schemas/Controllers/AnswerPhotos.mjs');
-const { QuestionsController } = require('../Schemas/Controllers/Questions.mjs');
-const { ReviewsController } = require('../Schemas/Controllers/Reviews.mjs');
-const { PhotosController } = require('../Schemas/Controllers/Photos.mjs');
-const { ReviewPhotosController } = require('../Schemas/Controllers/ReviewPhotos.mjs');
-const { CharacteristicsController } = require('../Schemas/Controllers/Characteristics.mjs');
-const { CharacteristicReviewsController } = require('../Schemas/Controllers/CharacteristicReviews.mjs');
+const { ProductController } = require('../db/Controllers/Product.mjs');
+const { RelatedController } = require('../db/Controllers/Related.mjs');
+const { FeaturesController } = require('../db/Controllers/Features.mjs');
+const { SKUsController } = require('../db/Controllers/SKUs.mjs');
+const { StylesController } = require('../db/Controllers/Styles.mjs');
+const { AnswersController } = require('../db/Controllers/Answers.mjs');
+const { AnswerPhotosController } = require('../db/Controllers/AnswerPhotos.mjs');
+const { QuestionsController } = require('../db/Controllers/Questions.mjs');
+const { ReviewsController } = require('../db/Controllers/Reviews.mjs');
+const { PhotosController } = require('../db/Controllers/Photos.mjs');
+const { ReviewPhotosController } = require('../db/Controllers/ReviewPhotos.mjs');
+const { CharacteristicsController } = require('../db/Controllers/Characteristics.mjs');
+const { CharacteristicReviewsController } = require('../db/Controllers/CharacteristicReviews.mjs');
 const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env
 
 //server

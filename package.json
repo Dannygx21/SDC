@@ -8,8 +8,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start-dev": "nodemon API/server.js",
-    "start-old-dev": "nodemon old/server.js"
+    "start-dev": "node src/api/server.js",
+    "start-old-dev": "nodemon src/api/server.js",
+    "run etl": "node src/etl/index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
