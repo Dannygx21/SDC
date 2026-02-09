@@ -3,8 +3,9 @@ Data
 test
 TEST
 tests
-package-lock.json
 .vscode
 .env
 .env.*
 !.env.example
+.DS_Store
+*.log
