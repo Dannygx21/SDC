@@ -12,28 +12,22 @@ const mongoose = require('mongoose');
 
 function buildMongoURI() {
     const {
-        MONGO_HOST,
+        MONGO_URL,
         MONGO_PORT,
-        MONGO_DB,
+        MONGO_DBNAME,
     } = process.env;
 
-    if (!MONGO_HOST || !MONGO_DB) {
-        throw new Error('Missing required MongoDB environment variables: MONGO_HOST, MONGO_DB');
+    if (!MONGO_URL || !MONGO_DBNAME) {
+        throw new Error('Missing required MongoDB environment variables: MONGO_URL, MONGO_DBNAME');
     }
 
-    // Atlas SRV vs Standard Mongo
-    if (MONGO_HOST.includes('mongodb.net')) {
-        return `mongodb+srv://${MONGO_HOST}/${MONGO_DB}`;
-    }
-
-    return `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`;
+    return `${MONGO_URL}`
 }
 
 async function connectToMongo() {
     const {
         MONGO_USER,
         MONGO_PASS,
-        MONGO_AUTH_SOURCE
     } = process.env;
 
     const uri = buildMongoURI();
@@ -44,7 +38,7 @@ async function connectToMongo() {
     };
 
     if (MONGO_AUTH_SOURCE) {
-        options.authSource = MONGO_AUTH_SOURCE;
+        options.authSource = MONGO_DBNAME;
     }
 
     try {
