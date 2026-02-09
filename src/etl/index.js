@@ -8,6 +8,7 @@
 
 const mongoose = require('mongoose');
 require('dotenv').config();
+const { MONGO_URL, MONGO_DBNAME, MONGO_USER, MONGO_PASS, MONGO_AUTH_SOURCE } = process.env;
 
 const {
     importProducts,
@@ -29,10 +30,11 @@ async function runETL() {
     try {
         console.log('Starting Catwalk ETL');
 
-        await mongoose.connect(process.env.MONGO_URI, {
-            dbName: process.env.MONGO_DB,
-            user: process.env.DB_USER,
-            pass: process.env.DB_PASS,
+        await mongoose.connect(MONGO_URL, {
+            dbName: MONGO_DBNAME,
+            authSource: MONGO_AUTH_SOURCE,
+            user: MONGO_USER,
+            pass: MONGO_PASS,
         });
 
         console.log('MongoDB connected');

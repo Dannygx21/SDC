@@ -1,6 +1,23 @@
-FROM node:lts-alpine3.23
+# =========================
+# Catwalk Backend (API + ETL)
+# =========================
+
+FROM node:20-alpine
+
+# Set working directory
 WORKDIR /app
-COPY . .
-RUN npm install --production
-EXPOSE 3000
-CMD [ "npm", "run", "start-old-dev" ]
+
+# Copy only dependency manifests first (better caching)
+COPY package*.json ./
+
+# Install production dependencies deterministically
+RUN npm ci --omit=dev
+
+# Copy application source
+COPY src ./src
+
+# Expose API port (internal only)
+EXPOSE 4000
+
+# Default command: run API
+CMD ["npm", "start"]
