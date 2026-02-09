@@ -17,12 +17,12 @@
     "csv-parser": "^3.2.0",
     "csvtojson": "^2.0.14",
     "dotenv": "^17.2.3",
+    "dotenv-cli": "^11.0.0",
     "express": "^5.1.0",
     "mongodb": "^7.0.0",
     "mongoose": "^9.0.0"
   },
   "devDependencies": {
-    "dotenv-cli": "^11.0.0",
     "nodemon": "^3.1.11"
   }
 }
