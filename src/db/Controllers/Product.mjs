@@ -1,4 +1,4 @@
-import Product from '../Models/Products.js';
+import Product from '../Models/Product.js';
 
 export const ProductController = {
 

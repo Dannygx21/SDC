@@ -7,10 +7,10 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start-dev": "node src/api/server.js",
-    "start-old-dev": "nodemon src/api/server.js",
-    "run etl": "node src/etl/index.js"
+    "start-dev": "dotenv -e .env.dev -- nodemon src/api/server.js",
+    "start": "dotenv -e .env.prod -- node src/api/server.js",
+    "etl:dev": "dotenv -e .env.dev -- node src/etl/index.js",
+    "etl:prod": "dotenv -e .env.prod -- node src/etl/index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -22,6 +22,7 @@
     "mongoose": "^9.0.0"
   },
   "devDependencies": {
+    "dotenv-cli": "^11.0.0",
     "nodemon": "^3.1.11"
   }
 }

@@ -1,6 +1,22 @@
-// Server made to replicate Catwalk project. Catwalk project was given non-ideal API, forcing logic onto front end. This server serves as a replicate of that, to stand up catwalk application.
-require('dotenv').config()
-const mongoose = require('mongoose')
+/**
+ * Catwalk API Server
+ * ------------------
+ * Production-safe Express server.
+ * - Environment-driven
+ * - Mongo connection required before start
+ * - Compatible with Docker, ETL, and local dev
+ * - Server made to replicate Catwalk project. Catwalk project was given non-ideal API, forcing logic onto front end. This server serves as a replicate of that, to stand up catwalk application.
+*/
+
+require('dotenv').config();
+const { ENV_HOST, ENV_PORT, NODE_ENV } = process.env;
+const express = require('express');
+const cors = require('cors');
+
+//MongoDB connection
+const { connectToMongo } = require('../db/connect');
+
+//Controllers
 const { ProductController } = require('../db/Controllers/Product.mjs');
 const { RelatedController } = require('../db/Controllers/Related.mjs');
 const { FeaturesController } = require('../db/Controllers/Features.mjs');
@@ -14,31 +30,24 @@ const { PhotosController } = require('../db/Controllers/Photos.mjs');
 const { ReviewPhotosController } = require('../db/Controllers/ReviewPhotos.mjs');
 const { CharacteristicsController } = require('../db/Controllers/Characteristics.mjs');
 const { CharacteristicReviewsController } = require('../db/Controllers/CharacteristicReviews.mjs');
-const { DB_URL, DB_DBNAME, DB_USER, DB_PASS } = process.env
 
-//server
-const cors = require('cors')
-const express = require('express');
-const ReviewPhotos = require('../Schemas/Models/ReviewPhotos');
+/* --------------------
+   Middleware
+-------------------- */
 const app = express()
-
 app.use(cors())
 app.use(express.json())
 
+/* --------------------
+   Health Check
+-------------------- */
+app.get('/', (_req, res) => {
+    res.sendStatus(200);
+});
 
-//connect to mongodb
-const db = mongoose.connect(DB_URL, {
-    dbName: DB_DBNAME,
-    user: DB_USER,
-    pass: DB_PASS
-})
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log('mongodb connection error:', err))
-
-app.get('/', async (req, res) => {
-    console.log(`Request received: ${req.body}`)
-    res.sendStatus(200)
-})
+/* --------------------
+   Products
+-------------------- */
 
 // endpoint to get product by ID adds Features to the response
 app.get('/products/:product_id', async (req, res) => {
@@ -111,6 +120,9 @@ app.get('/products/:product_id/styles', async (req, res) => {
 
 })
 
+/* --------------------
+   Q&A
+-------------------- */
 // endpoint to get answers by question ID, as well as associated answer photos (merged)
 app.get('/qa/questions/:question_id/answers', async (req, res) => {
     console.log('Received request for answers by question ID:', req.params.question_id)
@@ -265,6 +277,9 @@ app.put('/qa/answers/:answer_id/report', async (req, res) => {
         })
 })
 
+/* --------------------
+   Reviews
+-------------------- */
 app.get('/reviews', async (req, res) => {
     console.log('Received request for reviews for product ID:', req.query.product_id, 'page:', req.query.page, 'count:', req.query.count, 'sort:', req.query.sort);
     ReviewsController.getReviewsByProductIdByPageCountAndSort(Number(req.query.product_id), Number(req.query.page), Number(req.query.count), req.query.sort)
@@ -405,6 +420,21 @@ app.get('/products/:product_id/styles/test', async (req, res) => {
         })
 })
 
-app.listen(3000, () => {
-    console.log('server listening on port 3000')
-})
+
+/* --------------------
+   Server bootstrap
+-------------------- */
+async function startServer() {
+    try {
+        await connectToMongo();
+
+        app.listen(ENV_PORT, ENV_HOST, () => {
+            console.log(`Catwalk API running on ${ENV_HOST}:${ENV_PORT} (${NODE_ENV})`);
+        });
+    } catch (err) {
+        console.error('Failed to start Catwalk API');
+        process.exit(1);
+    }
+}
+
+startServer();

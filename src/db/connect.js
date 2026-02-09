@@ -13,7 +13,6 @@ const mongoose = require('mongoose');
 function buildMongoURI() {
     const {
         MONGO_URL,
-        MONGO_PORT,
         MONGO_DBNAME,
     } = process.env;
 
@@ -28,18 +27,18 @@ async function connectToMongo() {
     const {
         MONGO_USER,
         MONGO_PASS,
+        MONGO_AUTH_SOURCE,
+        MONGO_DBNAME
     } = process.env;
 
     const uri = buildMongoURI();
 
     const options = {
         user: MONGO_USER,
-        pass: MONGO_PASS
+        pass: MONGO_PASS,
+        authSource: MONGO_AUTH_SOURCE,
+        dbName: MONGO_DBNAME
     };
-
-    if (MONGO_AUTH_SOURCE) {
-        options.authSource = MONGO_DBNAME;
-    }
 
     try {
         await mongoose.connect(uri, options);

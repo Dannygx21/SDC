@@ -4,5 +4,7 @@ test
 TEST
 tests
 package-lock.json
+.env.dev
+.env.prod
 .env
 .vscode
