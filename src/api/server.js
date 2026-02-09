@@ -12,6 +12,8 @@ require('dotenv').config();
 const { ENV_HOST, ENV_PORT, NODE_ENV } = process.env;
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 
 //MongoDB connection
 const { connectToMongo } = require('../db/connect');
@@ -419,6 +421,21 @@ app.get('/products/:product_id/styles/test', async (req, res) => {
             res.status(500).json({ error: 'Internal Server Error' })
         })
 })
+
+/* --------------------
+   Messages
+-------------------- */
+app.get('/messages', (req, res) => {
+    const filePath = path.join(__dirname, './messages.txt');
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading messages file:', err);
+            return res.status(500).json({ error: 'Failed to Load messages' });
+        }
+        let arr = data.split('\n');
+        res.status(200).json({ messages: arr[Math.floor(Math.random() * arr.length)] });
+    });
+});
 
 
 /* --------------------
