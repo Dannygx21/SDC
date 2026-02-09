@@ -24,7 +24,7 @@ const {
     importCharacteristics,
     importCharacteristicReviews,
     importPhotos,
-} = require('./importers');
+} = require('./importers.js');
 
 async function runETL() {
     try {

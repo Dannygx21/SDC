@@ -31,7 +31,7 @@ const {
     cleanCharacteristics,
     cleanCharacteristicReviews,
     cleanPhotos,
-} = require('./transforms');
+} = require('./transformers.js');
 
 /**
  * Generic CSV importer
