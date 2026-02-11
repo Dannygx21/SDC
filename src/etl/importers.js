@@ -3,12 +3,12 @@ const csv = require('csv-parser');
 
 const BATCH_SIZE = 5000;
 
-async function importCsv({
+async function importCsv(
     filePath,
     Model,
     transform,
     label
-}) {
+) {
     return new Promise((resolve, reject) => {
         let buffer = [];
         let totalInserted = 0;
