@@ -56,17 +56,17 @@ async function runETL() {
         await connectToMongo('ETL Connected to MongoDB', 'ETL Failed to Connect to MongoDB');
 
         // Run imports in a controlled order
-        // await importCsv('data/Product/product.csv', Product, cleanProducts, 'Products');
-        // await importCsv('data/Product/related.csv', Related, cleanRelated, 'Related');
-        // await importCsv('data/Product/features.csv', Features, cleanFeatures, 'Features');
-        // await importCsv('data/Product/styles.csv', Styles, cleanStyles, 'Styles');
-        // await importCsv('data/Product/skus.csv', SKUs, cleanSKUs, 'SKUs');
-        // await importCsv('data/Product/photos.csv', Photos, cleanPhotos, 'Photos');
-        // await importCsv('data/QA/questions.csv', Questions, cleanQuestions, 'Questions');
-        // await importCsv('data/QA/answers.csv', Answers, cleanAnswers, 'Answers');
+        await importCsv('data/Product/product.csv', Product, cleanProducts, 'Products');
+        await importCsv('data/Product/related.csv', Related, cleanRelated, 'Related');
+        await importCsv('data/Product/features.csv', Features, cleanFeatures, 'Features');
+        await importCsv('data/Product/styles.csv', Styles, cleanStyles, 'Styles');
+        await importCsv('data/Product/skus.csv', SKUs, cleanSKUs, 'SKUs');
+        await importCsv('data/Product/photos.csv', Photos, cleanPhotos, 'Photos');
+        await importCsv('data/QA/questions.csv', Questions, cleanQuestions, 'Questions');
+        await importCsv('data/QA/answers.csv', Answers, cleanAnswers, 'Answers');
         await importCsv('data/QA/answers_photos.csv', AnswerPhotos, cleanAnswerPhotos, 'Answer Photos');
         await importCsv('data/Reviews/reviews.csv', Reviews, cleanReviews, 'Reviews');
-        await importCsv('data/Reviews/review_photos.csv', ReviewPhotos, cleanReviewPhotos, 'Review Photos');
+        await importCsv('data/Reviews/reviews_photos.csv', ReviewPhotos, cleanReviewPhotos, 'Review Photos');
         await importCsv('data/Reviews/characteristics.csv', Characteristics, cleanCharacteristics, 'Characteristics');
         await importCsv('data/Reviews/characteristic_reviews.csv', CharacteristicReviews, cleanCharacteristicReviews, 'Characteristic Reviews');
 
