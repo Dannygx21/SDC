@@ -23,7 +23,7 @@ function buildMongoURI() {
     return `${MONGO_URL}`
 }
 
-async function connectToMongo() {
+async function connectToMongo(connectSuccessMsg, connectErrorMsg) {
     const {
         MONGO_USER,
         MONGO_PASS,
@@ -43,8 +43,11 @@ async function connectToMongo() {
     try {
         await mongoose.connect(uri, options);
         console.log('[MongoDB] Connected: ', uri);
+        console.log(connectSuccessMsg || '');
     } catch (err) {
         console.error('[MongoDB] Connection error: ', err);
+        console.log(connectErrorMsg || '');
+
         throw err;
     }
 }
