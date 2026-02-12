@@ -9,7 +9,9 @@ async function importCsv(filePath, Model, transform, label) {
         let totalInserted = 0;
 
         const stream = fs.createReadStream(filePath)
-            .pipe(csv());
+            .pipe(csv({
+                mapHeaders: ({ header }) => header.trim()
+            }));
 
         const flushBuffer = async () => {
             if (buffer.length === 0) return;
