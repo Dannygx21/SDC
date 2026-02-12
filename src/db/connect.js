@@ -28,7 +28,8 @@ async function connectToMongo(connectSuccessMsg, connectErrorMsg) {
         MONGO_USER,
         MONGO_PASS,
         MONGO_AUTH_SOURCE,
-        MONGO_DBNAME
+        MONGO_DBNAME,
+        MONGO_URL
     } = process.env;
 
     const uri = buildMongoURI();

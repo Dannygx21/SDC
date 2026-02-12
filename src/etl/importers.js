@@ -3,50 +3,45 @@ const csv = require('csv-parser');
 
 const BATCH_SIZE = 5000;
 
-async function importCsv(
-    filePath,
-    Model,
-    transform,
-    label
-) {
+async function importCsv(filePath, Model, transform, label) {
     return new Promise((resolve, reject) => {
         let buffer = [];
         let totalInserted = 0;
-        let streamPaused = false;
 
         const stream = fs.createReadStream(filePath)
             .pipe(csv());
 
-        stream.on('data', async (row) => {
+        const flushBuffer = async () => {
+            if (buffer.length === 0) return;
+
+            const batch = buffer;
+            buffer = [];
+
+            await Model.insertMany(batch, { ordered: false });
+            totalInserted += batch.length;
+
+            console.log(`[${label}] Inserted ${totalInserted}`);
+        };
+
+        stream.on('data', (row) => {
             try {
-                const transformed = transform(row);
-                buffer.push(transformed);
+                buffer.push(transform(row));
 
-                if (buffer.length >= BATCH_SIZE && !streamPaused) {
+                if (buffer.length >= BATCH_SIZE) {
                     stream.pause();
-                    streamPaused = true;
 
-                    await Model.insertMany(buffer, { ordered: false });
-
-                    totalInserted += buffer.length;
-                    console.log(`[${label}] Inserted ${totalInserted} records`);
-
-                    buffer = [];
-                    streamPaused = false;
-                    stream.resume();
+                    flushBuffer()
+                        .then(() => stream.resume())
+                        .catch(reject);
                 }
             } catch (err) {
-                console.error(`[${label}] Error processing row`, err);
+                reject(err);
             }
         });
 
         stream.on('end', async () => {
             try {
-                if (buffer.length > 0) {
-                    await Model.insertMany(buffer, { ordered: false });
-                    totalInserted += buffer.length;
-                }
-
+                await flushBuffer();
                 console.log(`[${label}] COMPLETE — ${totalInserted} total inserted`);
                 resolve();
             } catch (err) {
@@ -54,9 +49,7 @@ async function importCsv(
             }
         });
 
-        stream.on('error', (err) => {
-            reject(err);
-        });
+        stream.on('error', reject);
     });
 }
 
