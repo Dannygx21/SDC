@@ -16,8 +16,19 @@
    ========================= */
 
 function cleanProducts(data) {
-    console.log(`Transforming product ${data.id}...`);
-    console.log(data)
+    const rawPrice = String(data.default_price).trim();
+
+    // Remove accidental prefix: default_price:
+    const cleandedPrice = rawPrice.replace(/^default_price:\s*/i, '')
+
+    const price = Number(cleandedPrice);
+
+    if (Number.isNaN(price)) {
+        throw new Error(
+            `Invalid default_price for product id=${data.id}. Raw value: "${data.default_price}"`
+        )
+    };
+
     return {
         id: Number(data.id),
         name: data.name,
