@@ -20,9 +20,9 @@ function cleanProducts(data) {
 
     //Extract only digits (and optional decimal)
     const match = rawPrice.match(/-?\d+(\.\d+)?/)
-    console.log(`This is match result: ${match}`)
 
     if (!match) {
+        console.log(`This is match result: ${match}`)
         throw new Error(`Invalid default_price: "${rawPrice}"`)
     }
 
