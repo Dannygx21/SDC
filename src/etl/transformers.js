@@ -16,6 +16,8 @@
    ========================= */
 
 function cleanProducts(data) {
+    console.log(`Transforming product ${data.id}...`);
+    console.log(data)
     return {
         id: Number(data.id),
         name: data.name,
