@@ -19,7 +19,11 @@ async function importCsv(filePath, Model, transform, label) {
             const batch = buffer;
             buffer = [];
 
-            await Model.insertMany(batch, { ordered: false });
+            await Model.insertMany(
+                batch, {
+                ordered: true,
+                rawResult: false
+            });
             totalInserted += batch.length;
 
             console.log(`[${label}] Inserted ${totalInserted}`);
@@ -27,7 +31,20 @@ async function importCsv(filePath, Model, transform, label) {
 
         stream.on('data', (row) => {
             try {
-                buffer.push(transform(row));
+                // For validation
+                const transformed = transform(row);
+
+                //Validate Immediately 
+                const doc = new Model(transformed);
+                const validationError = doc.validateSync();
+                if (validationError) {
+                    console.error(`\n[${label}] Validation Failed`)
+                    console.error(validationError);
+                    console.error('Offending document:', transformed);
+                    process.exit(1);
+                }
+
+                buffer.push(transformed);
 
                 if (buffer.length >= BATCH_SIZE) {
                     stream.pause();
