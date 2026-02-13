@@ -11,6 +11,7 @@
  * - Output: clean JS object matching Mongoose schema
  */
 
+const { checkIfNumber } = require('./checkIfNumber.js');
 /* =========================
    PRODUCT DATA
    ========================= */
@@ -21,10 +22,12 @@ function cleanProducts(data) {
     //Extract only digits (and optional decimal)
     const match = rawPrice.match(/-?\d+(\.\d+)?/)
 
-    if (!match) {
-        console.log(`This is match result: ${match}`)
-        throw new Error(`Invalid default_price: "${rawPrice}"`)
-    }
+    // if (!match) {
+    //     console.log(`This is match result: ${match}`)
+    //     throw new Error(`Invalid default_price: "${rawPrice}"`)
+    // }
+
+    const defaultPrice = checkIfNumber(match[0], 'Product', 'default_price', data.id);
 
     return {
         id: Number(data.id),
@@ -32,7 +35,7 @@ function cleanProducts(data) {
         slogan: data.slogan,
         description: data.description,
         category: data.category,
-        default_price: Number(match[0]),
+        default_price: defaultPrice,
     };
 }
 
