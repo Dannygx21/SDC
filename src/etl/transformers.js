@@ -16,18 +16,15 @@
    ========================= */
 
 function cleanProducts(data) {
-    const rawPrice = String(data.default_price).trim();
+    const rawPrice = String(data.default_price || '').trim();
 
-    // Remove accidental prefix: default_price:
-    const cleandedPrice = rawPrice.replace(/^default_price:\s*/i, '')
+    //Extract only digits (and optional decimal)
+    const match = rawPrice.match(/-?\d+(\.\d+)?/)
+    console.log(`This is match result: ${match}`)
 
-    const price = Number(cleandedPrice);
-
-    if (Number.isNaN(price)) {
-        throw new Error(
-            `Invalid default_price for product id=${data.id}. Raw value: "${data.default_price}"`
-        )
-    };
+    if (!match) {
+        throw new Error(`Invalid default_price: "${rawPrice}"`)
+    }
 
     return {
         id: Number(data.id),
