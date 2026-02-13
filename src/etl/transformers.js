@@ -32,7 +32,7 @@ function cleanProducts(data) {
         slogan: data.slogan,
         description: data.description,
         category: data.category,
-        default_price: Number(data.default_price),
+        default_price: Number(match[0]),
     };
 }
 
