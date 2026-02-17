@@ -1,4 +1,4 @@
-export const checkIfNumber = (value, model, field, id) => {
+const checkIfNumber = (value, model, field, id) => {
     const num = Number(value);
     if (Number.isNaN(num)) {
         throw new Error(`Value "${value}" cannot be converted to a number for model "${model}", field "${field}", and id "${id}".`);
@@ -6,3 +6,5 @@ export const checkIfNumber = (value, model, field, id) => {
         return num;
     }
 };
+
+module.exports = { checkIfNumber };
