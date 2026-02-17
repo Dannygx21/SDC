@@ -13,7 +13,7 @@ const relatedSchema = new mongoose.Schema({
         type: Number,
         required: true
     }
-});
+}, { collection: 'related', strict: "throw" });
 
 const Related = mongoose.model('Related', relatedSchema);
 module.exports = Related;

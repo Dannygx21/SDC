@@ -71,6 +71,29 @@ async function runETL() {
         await importCsv('data/Reviews/characteristic_reviews.csv', CharacteristicReviews, cleanCharacteristicReviews, 'Characteristic Reviews');
 
         console.log('ETL completed successfully');
+
+        const models = [
+            Product,
+            Related,
+            Features,
+            SKUs,
+            Styles,
+            Questions,
+            Answers,
+            AnswerPhotos,
+            Reviews,
+            ReviewPhotos,
+            Characteristics,
+            CharacteristicReviews,
+            Photos
+        ]
+
+        // Log document counts for verification
+        for (const model of models) {
+            const count = await model.countDocuments();
+            console.log(`${model.modelName} count: ${count}`);
+        }
+
         process.exit(0);
     } catch (err) {
         console.error('ETL failed:', err);

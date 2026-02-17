@@ -25,7 +25,7 @@ const productSchema = new mongoose.Schema({
         type: Number,
         required: true
     }
-});
+}, { collection: 'products', strict: "throw" });
 
 const Product = mongoose.model('Product', productSchema);
 module.exports = Product;

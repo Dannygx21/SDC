@@ -18,7 +18,7 @@ const featuresSchema = new mongoose.Schema({
         required: false,
         default: undefined
     }
-});
+}, { collection: 'features', strict: "throw" });
 
 const Features = mongoose.model('Features', featuresSchema);
 module.exports = Features;

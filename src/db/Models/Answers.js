@@ -37,6 +37,6 @@ const answersSchema = new mongoose.Schema({
         default: 0
     }
 
-});
+}, { collection: 'answers', strict: "throw" });
 const Answers = mongoose.model('Answers', answersSchema);
 module.exports = Answers;

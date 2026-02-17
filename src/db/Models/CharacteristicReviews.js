@@ -17,6 +17,6 @@ const characteristicsReviewsSchema = new mongoose.Schema({
         type: Number,
         required: true
     }
-});
+}, { collection: 'characteristic_reviews', strict: "throw" });
 const CharacteristicReviews = mongoose.model('CharacteristicReviews', characteristicsReviewsSchema);
 module.exports = CharacteristicReviews;

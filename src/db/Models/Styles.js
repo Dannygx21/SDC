@@ -25,6 +25,6 @@ const stylesSchema = new mongoose.Schema({
         type: Boolean,
         required: true
     }
-});
+}, { collection: 'styles', strict: "throw" });
 const Styles = mongoose.model('Styles', stylesSchema);
 module.exports = Styles;

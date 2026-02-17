@@ -17,17 +17,11 @@ const { checkIfNumber } = require('./checkIfNumber.js');
    ========================= */
 
 function cleanProducts(data) {
-    const rawPrice = String(data.default_price || '').trim();
+    if (!data.id) throw new Error(`Missing 'id' field in Product data: ${JSON.stringify(data)}`);
 
-    //Extract only digits (and optional decimal)
-    const match = rawPrice.match(/-?\d+(\.\d+)?/)
+    const price = Number(String(data.default_price).replace(/\D/g, ""));
 
-    // if (!match) {
-    //     console.log(`This is match result: ${match}`)
-    //     throw new Error(`Invalid default_price: "${rawPrice}"`)
-    // }
-
-    const defaultPrice = checkIfNumber(match[0], 'Product', 'default_price', data.id);
+    checkIfNumber(price, 'Product', 'default_price', data.id);
 
     return {
         id: Number(data.id),
@@ -35,7 +29,7 @@ function cleanProducts(data) {
         slogan: data.slogan,
         description: data.description,
         category: data.category,
-        default_price: defaultPrice,
+        default_price: price,
     };
 }
 

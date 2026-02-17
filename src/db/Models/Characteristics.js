@@ -13,6 +13,6 @@ const characteristicsSchema = new mongoose.Schema({
         type: String,
         required: true
     }
-});
+}, { collection: 'characteristics', strict: "throw" });
 const Characteristics = mongoose.model('Characteristics', characteristicsSchema);
 module.exports = Characteristics;

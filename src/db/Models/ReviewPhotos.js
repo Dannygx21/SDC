@@ -13,6 +13,6 @@ const reviewPhotosSchema = new mongoose.Schema({
         type: String,
         required: true
     }
-});
+}, { collection: 'review_photos', strict: "throw" });
 const ReviewPhotos = mongoose.model('ReviewPhotos', reviewPhotosSchema);
 module.exports = ReviewPhotos;

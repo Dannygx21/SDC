@@ -13,6 +13,6 @@ const answerPhotosSchema = new mongoose.Schema({
         type: String,
         required: true
     }
-});
+}, { collection: 'answer_photos', strict: "throw" });
 const AnswerPhotos = mongoose.model('AnswerPhotos', answerPhotosSchema);
 module.exports = AnswerPhotos;

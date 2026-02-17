@@ -36,7 +36,7 @@ const questionsSchema = new mongoose.Schema({
         required: true,
         default: 0
     }
-});
+}, { collection: 'questions', strict: "throw" });
 
 const Questions = mongoose.model('Questions', questionsSchema)
 module.exports = Questions;

@@ -49,6 +49,6 @@ const reviewsSchema = new mongoose.Schema({
         type: Number,
         required: true
     }
-});
+}, { collection: 'reviews', strict: "throw" });
 const Reviews = mongoose.model('Reviews', reviewsSchema);
 module.exports = Reviews;   

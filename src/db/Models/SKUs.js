@@ -17,7 +17,7 @@ const skusSchema = new mongoose.Schema({
         type: Number,
         required: true
     }
-});
+}, { collection: 'skus', strict: "throw" });
 
 const SKUs = mongoose.model('SKUs', skusSchema);
 module.exports = SKUs;

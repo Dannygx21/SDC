@@ -62,6 +62,16 @@ async function importCsv(filePath, Model, transform, label) {
             try {
                 await flushBuffer();
                 console.log(`[${label}] COMPLETE — ${totalInserted} total inserted`);
+
+                // Mongo count vs csv count
+                const countInDb = await Model.countDocuments();
+                if (countInDb !== totalInserted) {
+                    console.error(`[${label}] MISMATCH: Inserted ${totalInserted} but found ${countInDb} in DB`);
+                    process.exit(1);
+                }
+
+                console.log(`[${label}] Validation successful: ${countInDb} documents in DB matches inserted count`);
+
                 resolve();
             } catch (err) {
                 reject(err);
