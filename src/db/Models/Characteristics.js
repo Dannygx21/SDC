@@ -14,5 +14,8 @@ const characteristicsSchema = new mongoose.Schema({
         required: true
     }
 }, { collection: 'characteristics', strict: "throw" });
+
+characteristicsSchema.index({ product_id: 1 });
+
 const Characteristics = mongoose.model('Characteristics', characteristicsSchema);
 module.exports = Characteristics;

@@ -27,5 +27,7 @@ const productSchema = new mongoose.Schema({
     }
 }, { collection: 'products', strict: "throw" });
 
+productSchema.index({ id: 1 });
+
 const Product = mongoose.model('Product', productSchema);
 module.exports = Product;

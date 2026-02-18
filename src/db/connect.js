@@ -38,7 +38,8 @@ async function connectToMongo(connectSuccessMsg, connectErrorMsg) {
         user: MONGO_USER,
         pass: MONGO_PASS,
         authSource: MONGO_AUTH_SOURCE,
-        dbName: MONGO_DBNAME
+        dbName: MONGO_DBNAME,
+        autoIndex: process.env.NODE_ENV === 'production' ? true : false
     };
 
     try {

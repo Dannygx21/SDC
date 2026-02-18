@@ -18,5 +18,8 @@ const characteristicsReviewsSchema = new mongoose.Schema({
         required: true
     }
 }, { collection: 'characteristic_reviews', strict: "throw" });
+
+characteristicsReviewsSchema.index({ characteristic_id: 1 });
+
 const CharacteristicReviews = mongoose.model('CharacteristicReviews', characteristicsReviewsSchema);
 module.exports = CharacteristicReviews;

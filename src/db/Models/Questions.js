@@ -38,5 +38,7 @@ const questionsSchema = new mongoose.Schema({
     }
 }, { collection: 'questions', strict: "throw" });
 
+questionsSchema.index({ product_id: 1 });
+
 const Questions = mongoose.model('Questions', questionsSchema)
 module.exports = Questions;

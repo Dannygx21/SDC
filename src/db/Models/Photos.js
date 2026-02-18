@@ -17,5 +17,8 @@ const photosSchema = new mongoose.Schema({
         required: true
     }
 }, { collection: 'photos', strict: "throw" });
+
+photosSchema.index({ styleId: 1 });
+
 const Photos = mongoose.model('Photos', photosSchema);
 module.exports = Photos;

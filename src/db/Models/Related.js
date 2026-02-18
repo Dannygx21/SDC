@@ -15,5 +15,7 @@ const relatedSchema = new mongoose.Schema({
     }
 }, { collection: 'related', strict: "throw" });
 
+relatedSchema.index({ current_product_id: 1 });
+
 const Related = mongoose.model('Related', relatedSchema);
 module.exports = Related;

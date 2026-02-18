@@ -50,5 +50,10 @@ const reviewsSchema = new mongoose.Schema({
         required: true
     }
 }, { collection: 'reviews', strict: "throw" });
+
+reviewsSchema.index({ product_id: 1, date: -1 });
+reviewsSchema.index({ product_id: 1, rating: -1 });
+reviewsSchema.index({ product_id: 1, helpfulness: -1 });
+
 const Reviews = mongoose.model('Reviews', reviewsSchema);
 module.exports = Reviews;   

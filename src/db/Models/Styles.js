@@ -26,5 +26,8 @@ const stylesSchema = new mongoose.Schema({
         required: true
     }
 }, { collection: 'styles', strict: "throw" });
+
+stylesSchema.index({ product_id: 1 });
+
 const Styles = mongoose.model('Styles', stylesSchema);
 module.exports = Styles;

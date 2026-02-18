@@ -19,5 +19,8 @@ const skusSchema = new mongoose.Schema({
     }
 }, { collection: 'skus', strict: "throw" });
 
+
+skusSchema.index({ style_id: 1 });
+
 const SKUs = mongoose.model('SKUs', skusSchema);
 module.exports = SKUs;
