@@ -97,29 +97,65 @@ app.get('/products/:product_id/related', async (req, res) => {
 // TODO : merge styles and skus into one response
 app.get('/products/:product_id/styles', async (req, res) => {
     console.log('Received request for styles by ID:', req.params.product_id);
-    StylesController.getStylesByProductId(Number(req.params.product_id))
-        .then(async (styles) => {
-            // for each style, get the skus
-            const results = await Promise.all(styles.map(async (style) => {
-                const photos = await PhotosController.getPhotosByStyleId(style.style_id);
-                if (!photos || photos.length === 0) {
-                    console.log('No photos found for style ID:', style.style_id);
-                    photos.push({ thumbnail_url: 'https://unsplash.com/photos/white-egg-with-face-illustration-WtolM5hsj14', url: 'https://unsplash.com/photos/white-egg-with-face-illustration-WtolM5hsj14' });
-                }
-                const skus = await SKUsController.getSKUsByStylesId(style.style_id);
-                const skusObj = skus.reduce((acc, sku) => {
-                    acc[sku.id] = { quantity: sku.quantity, size: sku.size };
-                    return acc;
-                }, {});
-                return { ...style.toObject(), photos: photos, skus: skusObj };
-            }));
-            res.status(200).send({ product_id: req.params.product_id, results: results });
-        })
-        .catch(err => {
-            console.error('Error fetching product by ID in server:', err)
-            res.status(500).json({ error: 'Internal Server Error' })
+    try {
+        const productId = Number(req.params.product_id);
+
+        // 1st: get styles
+        const styles = await StylesController.getStylesByProductId(productId)
+
+        if (!styles.length) {
+            return res.status(200).send({
+                product_id: productId,
+                results: []
+            });
+        }
+
+        const styleIds = styles.map(s => s.style_id)
+
+        // 2nd: get all photos in one query
+        const photos = await PhotosController.getPhotosByStyleId(styleIds)
+
+        // 3rd: get all skus in one query
+        const skus = SKUsController.getSKUsByStylesId(styleIds)
+
+        // Build lookup maps
+        const photosMap = {}
+
+        photos.forEach(photo => {
+            if (!photosMap[photo.styleId]) {
+                photosMap[photo.styleId] = [];
+            }
+
+            photosMap[photo.styleId].push(photo)
         })
 
+        const skusMap = {};
+
+        skus.forEach(sku => {
+            if (!skusMap[sku.style_id]) {
+                skusMap[sku.style_id] = {}
+            }
+            skusMap[sku.style_id][sku.id] = {
+                quantity: sku.quantity,
+                size: sku.size
+            }
+        })
+
+        //merge everything
+        const results = styles.map(style => ({
+            ...style,
+            photos: photosMap[style.style_id] || [],
+            skus: skusMap[style.style_id] || {}
+        }))
+
+        res.status(200).send({
+            product_id: productId,
+            results
+        })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: 'Internal Server Error' })
+    }
 })
 
 /* --------------------
@@ -284,18 +320,56 @@ app.put('/qa/answers/:answer_id/report', async (req, res) => {
 -------------------- */
 app.get('/reviews', async (req, res) => {
     console.log('Received request for reviews for product ID:', req.query.product_id, 'page:', req.query.page, 'count:', req.query.count, 'sort:', req.query.sort);
-    ReviewsController.getReviewsByProductIdByPageCountAndSort(Number(req.query.product_id), Number(req.query.page), Number(req.query.count), req.query.sort)
-        .then(async (reviews) => {
-            const reviewPhotos = await Promise.all(reviews.map(async (review) => {
-                const photos = await ReviewPhotosController.getReviewPhotosByReviewId(review.review_id);
-                return { ...review.toObject(), photos: photos };
-            }));
-            res.status(200).send({ product_id: req.query.product_id, results: reviewPhotos });
+
+    try {
+        const productId = Number(req.query.product_id)
+        const page = Number(req.query.page) || 1
+        const count = Number(req.query.count) || 5
+        const sort = req.query.sort || 'newest'
+
+        const sortOptions = {
+            newest: { date: -1 },
+            helpful: { helpfulness: -1 },
+            relevant: { helpfulness: -1, date: -1 }
+        }
+
+        const reviews = await Reviews.getReviewsByProductIdByPageCountAndSort(productId, sortOptions)
+
+        if (!reviews.length) {
+            return res.status(200).send({
+                product_id: productId,
+                results: []
+            })
+        }
+
+        const reviewIds = reviews.map(r => r.review_id)
+
+        // Fetch all photos in One query
+        const photos = await ReviewPhotos.getReviewPhotosByReviewId(reviewIds)
+
+        const photosMap = {}
+        photos.forEach(photo => {
+            if (!photosMap[photo.review_id]) {
+                photosMap[photo.review_id] = []
+            }
+            photosMap[photo.review_id].push(photo)
         })
-        .catch(err => {
-            console.error('Error fetching reviews by product ID in server:', err)
-            res.status(500).json({ error: 'Internal Server Error' })
+
+        const results = reviews.map(review => ({
+            ...review,
+            photos: photosMap[review.review_id] || []
+        }))
+
+        res.status(200).send({
+            product_id: productId,
+            results
         })
+
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: 'Internal Server Error' })
+    }
+
 })
 
 app.get('/reviews/meta', async (req, res) => {

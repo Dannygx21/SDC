@@ -1,12 +1,13 @@
 import Reviews from '../Models/Reviews.js';
 
 export const ReviewsController = {
-    getReviewsByProductIdByPageCountAndSort: async (product_id, page = 1, count = 5, sort = 'newest') => {
+    getReviewsByProductIdByPageCountAndSort: async (product_id, sortOptions) => {
         try {
-            const reviews = await Reviews.find({ product_id: product_id, reported: false }, '-__v -_id -product_id -reported')
+            const reviews = await Reviews.find({ product_id: product_id }, '-__v -_id ')
+                .sort(sortOptions[sort] || sortOptions.newest)
                 .skip((page - 1) * count)
                 .limit(count)
-                .sort(sort === 'newest' ? { date: -1 } : sort === 'helpful' ? { helpfulness: -1 } : {});
+                .lean()
             return reviews;
         } catch (error) {
             console.error("Error fetching reviews:", error);

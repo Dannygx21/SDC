@@ -3,7 +3,7 @@ export const PhotosController = {
 
     getPhotosByStyleId: async function (styleId) {
         try {
-            const photos = await Photos.find({ styleId: styleId }, '-_id -__v -styleId -id');
+            const photos = await Photos.find({ styleId: { $in: styleId } }, '-_id -__v').lean();
             return photos;
         }
         catch (error) {

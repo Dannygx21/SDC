@@ -4,7 +4,7 @@ export const SKUsController = {
 
     getSKUsByStylesId: async function (styleId) {
         try {
-            const skus = await SKUs.find({ style_id: styleId }, '-_id -__v -style_id');
+            const skus = await SKUs.find({ style_id: { $in: styleId } }, '-_id -__v ').lean()
             return skus;
         } catch (error) {
             throw new Error('Error fetching SKUs by style ID: ' + error.message);
