@@ -374,46 +374,49 @@ app.get('/reviews', async (req, res) => {
 
 app.get('/reviews/meta', async (req, res) => {
     console.log('Received request for review metadata for product ID:', req.query.product_id);
-    const response = {}
-    Promise.all([
-        ReviewsController.getReviewsByProductIdByPageCountAndSort(Number(req.query.product_id), 1, 1000, 'newest'),
-        CharacteristicsController.getCharacteristicsByProductId(Number(req.query.product_id))
-    ])
-        .then(async ([reviews, characteristics]) => {
-            //ratings and recommended
-            const ratings = {};
-            const recommended = { false: 0, true: 0 };
-            reviews.forEach(review => {
-                ratings[review.rating] = (ratings[review.rating] || 0) + 1;
-                recommended[review.recommend] += 1;
-            });
-            response.product_id = req.query.product_id;
-            response.ratings = ratings;
-            response.recommended = recommended;
-            //characteristics
-            const characteristicsObj = {};
-            await Promise.all(characteristics.map(async (characteristic) => {
-                const charReviews = await CharacteristicReviewsController.getCharacteristicReviewsByCharacteristicId(characteristic.id);
-                const total = charReviews.reduce((sum, cr) => sum + cr.value, 0);
-                let average;
-                if (charReviews.length > 0) {
-                    average = total / charReviews.length;
-                } else {
-                    average = 0;
-                }
-                characteristicsObj[characteristic.name] = {
-                    id: characteristic.id,
-                    value: average.toFixed(4)
-                };
-            }));
-            response.characteristics = characteristicsObj;
-            console.log('Review metadata response for product ID:', req.query.product_id, response);
-            res.status(200).send(response);
+
+    try {
+        const productId = Number(req.query.product_id)
+
+        // aggregate ratings & recommended
+        const reviewStats = await ReviewsController.aggregateRatingsAndRecommended(productId)
+
+        let ratings = {}
+        let recommended = { false: 0, true: 0 }
+
+        if (reviewStats.length) {
+            reviewStats[0].ratings.forEach(r => {
+                ratings[r] = (ratings[r] || 0) + 1;
+            })
+
+            reviewStats[0].recommended.forEach(rec => {
+                recommended[rec] += 1;
+            })
+        }
+
+        // aggregate characteristic averages
+        const characteristicStats = CharacteristicReviewsController.aggregate(productId)
+
+        let characteristics = {}
+
+        characteristicStats.forEach(char => {
+            characteristics[char.name] = {
+                id: char._id,
+                value: char.avg.toFixed(4)
+            }
         })
-        .catch(err => {
-            console.error('Error fetching review metadata by product ID in server:', err)
-            res.status(500).json({ error: 'Internal Server Error' })
+
+        res.status(200).send({
+            product_id: productId,
+            ratings,
+            recommended,
+            characteristics
         })
+
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: 'Internal Server Error' })
+    }
 })
 
 app.get('/characteristics/:product_id', async (req, res) => {

@@ -31,5 +31,32 @@ export const CharacteristicReviewsController = {
         } catch (error) {
             throw new Error('Error adding characteristic review: ' + error.message);
         }
+    },
+
+    aggregate: async function (productId) {
+        try {
+            await CharacteristicReviews.aggregate([
+                {
+                    $lookup: {
+                        from: "characteristics",
+                        localField: "characteristic_id",
+                        foreignField: "id",
+                        as: "characteristic"
+                    }
+                },
+                { $unwind: "$characteristic" },
+                { $match: { "characteristic.product_id": productId } },
+                {
+                    $group: {
+                        _id: "$characteristic_id",
+                        name: { $first: "$characteristic.name" },
+                        avg: { $avg: "$value" }
+                    }
+                }
+            ])
+        } catch (error) {
+            console.error(error)
+            throw error
+        }
     }
 };

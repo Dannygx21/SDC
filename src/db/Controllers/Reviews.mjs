@@ -45,6 +45,28 @@ export const ReviewsController = {
             console.error("Error reporting review:", error);
             throw error;
         }
+    },
+
+    aggregateRatingsAndRecommended: async (productId) => {
+        try {
+            await Reviews.aggregate([
+                { $match: { product_id: productId } },
+                {
+                    $group: {
+                        _id: null,
+                        ratings: {
+                            $push: "$rating"
+                        },
+                        recommended: {
+                            $push: "$recommendj"
+                        }
+                    }
+                }
+            ])
+        } catch (error) {
+            console.error("Error aggregate Reviews:", error)
+            throw error;
+        }
     }
 
 };
