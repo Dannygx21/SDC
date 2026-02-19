@@ -333,7 +333,7 @@ app.get('/reviews', async (req, res) => {
             relevant: { helpfulness: -1, date: -1 }
         }
 
-        const reviews = await Reviews.getReviewsByProductIdByPageCountAndSort(productId, sortOptions)
+        const reviews = await ReviewsController.getReviewsByProductIdByPageCountAndSort(productId, sortOptions)
 
         if (!reviews.length) {
             return res.status(200).send({
